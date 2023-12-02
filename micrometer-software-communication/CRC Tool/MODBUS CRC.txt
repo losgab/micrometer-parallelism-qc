@@ -1,0 +1,5 @@
+MODBUS CRC 
+1. Select calculation type "CRC-16/MODBUS  X16+X15+X2+1 "
+2. In the hex input area, fill in the hexadecimal code to be calculated
+3. Click the calculate button to display the calculation results in the CRC column, exchange the positions of the two hexadecimal codes before and after the calculation results, and fill in the hexadecimal code to be calculated to form a complete MODBUS instruction
+4. For example: it is necessary to calculate the result 0bc4 after CRC code 01 03 00 02. After exchanging positions, complete the Modbus command is yes£º 01 03 00 00 00 02 C4 0B 
