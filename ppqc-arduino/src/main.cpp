@@ -33,8 +33,8 @@
 // Acceptance Criteria
 #define PARALLELISM 0.03
 #define PROFILE_NOMINAL 1.6
-#define PROFILE_HI_OFFSET 0.15
-#define PROFILE_LO_OFFSET 0.15
+#define PROFILE_HI_OFFSET 0.2
+#define PROFILE_LO_OFFSET 0.1
 
 // Setup new software Serial
 SoftwareSerial micrometer1(MM_RX_1, MM_TX_1, true);
