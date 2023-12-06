@@ -6,8 +6,8 @@
 #include <Button.hpp>
 
 // Software Serial Pins
-#define MM_RX_1 2
-#define MM_TX_1 3
+#define MM_RX_1 2 // GOes to D+
+#define MM_TX_1 3 // Goes to D-
 #define MM_RX_2 4
 #define MM_TX_2 5
 #define MM_RX_3 6
