@@ -12,6 +12,8 @@
 #define RX_PIN 17
 #define BUFFER_SIZE 2048
 
+// GPIO Stuff For UART Select
+
 // Micrometer Query Command
 uint8_t query[] = {0x01, 0x03, 0x00, 0x00, 0x00, 0x02, 0xC4, 0x0B}; // Micrometer Specific Query Instruction
 
@@ -55,15 +57,16 @@ void app_main(void)
 
     while (1)
     {
-        uart_send_bytes((const uint8_t *)&query);
-        SYS_DELAY(300);
-        if (uart_rx_available() > 0)
-        {
-            printf("RX Buffer Not Empty!!!\n");
-        }
-        else
-        {
-            printf("RX Buffer Empty!!!\n");
-        }
+        printf("Bruh!\n");
+        // uart_send_bytes((const uint8_t *)&query);
+        // SYS_DELAY(300);
+        // if (uart_rx_available() > 0)
+        // {
+        //     printf("RX Buffer Not Empty!!!\n");
+        // }
+        // else
+        // {
+        //     printf("RX Buffer Empty!!!\n");
+        // }
     }
 }
