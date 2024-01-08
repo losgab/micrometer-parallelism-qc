@@ -5,12 +5,14 @@
 #include <driver/uart.h>
 #include <driver/gpio.h>
 
+#include <Button.h>
+
 #define SYS_DELAY(x) vTaskDelay(pdMS_TO_TICKS(x))
 
 // UART Stuff
 #define UART_PORT_NUM UART_NUM_2
-#define TX_PIN 39
-#define RX_PIN 40
+#define TX_PIN GPIO_NUM_5
+#define RX_PIN GPIO_NUM_6
 #define BUFFER_SIZE 4096
 
 // Micrometer Query Command
@@ -19,16 +21,23 @@ const uint8_t query[] = {0x01, 0x03, 0x00, 0x00, 0x00, 0x02, 0xC4, 0x0B}; // Mic
 uint8_t response[9];
 
 // GPIO Stuff For UART Channel select through CD4052BE IC
-#define SELECT_A GPIO_NUM_33
-#define SELECT_B GPIO_NUM_34
-#define SELECT_PIN_BITMASK ((1ULL << GPIO_NUM_33) | (1ULL << GPIO_NUM_34))
+#define SELECT_A GPIO_NUM_3
+#define SELECT_B GPIO_NUM_4
+#define SELECT_PIN_BITMASK ((1ULL << SELECT_A) | (1ULL << SELECT_B))
 gpio_config_t gpio_select_config = {
     .pin_bit_mask = SELECT_PIN_BITMASK,
     .mode = GPIO_MODE_OUTPUT,
     .pull_up_en = GPIO_PULLUP_ENABLE,
     .pull_down_en = GPIO_PULLDOWN_DISABLE,
-    .intr_type = GPIO_INTR_DISABLE
-};
+    .intr_type = GPIO_INTR_DISABLE};
+uint8_t current_channel = 0;
+
+// Button Stuff
+#define PROGRAM_SWITCH_PIN GPIO_NUM_1
+#define ENABLE_SWITCH_PIN GPIO_NUM_44
+button_t program_button;
+button_t enable_button;
+uint8_t enable_switch_state = 0;
 
 // Prototype UART Library Functions
 void uart_init()
@@ -64,9 +73,9 @@ size_t uart_rx_available()
 void send_query()
 {
     uart_send_bytes(query, sizeof(query));
-    printf("---------------\n");
-    printf("Queried!\n");
-    printf("---------------\n");
+    // printf("---------------\n");
+    // printf("Queried!\n");
+    // printf("---------------\n");
 }
 
 void app_main(void)
@@ -75,9 +84,12 @@ void app_main(void)
     uart_init();
     ESP_ERROR_CHECK(gpio_config(&gpio_select_config));
 
+    // Button Config
+    program_button = create_button(PROGRAM_SWITCH_PIN, true);
+    enable_button = create_button(ENABLE_SWITCH_PIN, true);
+
     gpio_set_level(SELECT_A, 1);
     gpio_set_level(SELECT_B, 0);
-
 
     // TimerHandle_t timer = xTimerCreate("MyTimer",                 // Timer name
     //                                    pdMS_TO_TICKS(QUERY_FREQ), // Timer period in milliseconds (e.g., 1000 ms for 1 second)
@@ -88,11 +100,42 @@ void app_main(void)
     // xTimerStart(timer, 0);
 
     // uint16_t counter = 0;
+    gpio_set_level(SELECT_A, 0);
+    gpio_set_level(SELECT_B, 0);
+    current_channel = 0;
     while (1)
     {
-        SYS_DELAY(2000);
+        update_button(program_button);
+        update_button(enable_button);
+        SYS_DELAY(1000);
+
+        if (was_pushed(program_button))
+        {
+            if (current_channel)
+            {
+                gpio_set_level(SELECT_A, 0);
+                gpio_set_level(SELECT_B, 0);
+                current_channel = 0;
+            }
+            else
+            {
+                gpio_set_level(SELECT_A, 1);
+                gpio_set_level(SELECT_B, 0);
+                current_channel = 1;
+            }
+            SYS_DELAY(5);
+            // printf("Channel switched to %d\n", current_channel);
+        }
+
+        if (was_pushed(enable_button))
+        {
+            printf("Enable Button Pushed!\n");
+            enable_switch_state = !enable_switch_state;
+        }
+
         send_query();
         SYS_DELAY(50);
+
         if (uart_rx_available() > 0)
         {
             // counter++;
@@ -104,7 +147,10 @@ void app_main(void)
             uint8_t flag = response[3];
             float data = ((response[5] << 8) | response[6]);
             data = data / 1000;
-            printf("[RESULT]: %c%.3f\n", flag ? (uint8_t)('-') : (uint8_t)('+'), data);
+            if (enable_switch_state)
+            {
+                printf("[%d] [RESULT]: %c%.3f\n", current_channel, flag ? (uint8_t)('-') : (uint8_t)('+'), data);
+            }
         }
         // Resetting
         for (uint8_t i = 0; i < 9; i++)
