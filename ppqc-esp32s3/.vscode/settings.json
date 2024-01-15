@@ -24,6 +24,7 @@
         "system_error": "c",
         "typeinfo": "c",
         "utility": "c",
-        "gpio.h": "c"
+        "gpio.h": "c",
+        "easy_led_strip.h": "c"
     }
 }

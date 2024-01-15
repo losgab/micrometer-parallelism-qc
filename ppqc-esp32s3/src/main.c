@@ -17,7 +17,7 @@
 
 // Micrometer Query Command
 #define QUERY_FREQ 2000
-#define QUERY_RESPONSE_TIMEOUT 100
+#define QUERY_RESPONSE_TIMEOUT 50
 const uint8_t query[] = {0x01, 0x03, 0x00, 0x00, 0x00, 0x02, 0xC4, 0x0B}; // Micrometer Specific Query Instruction
 uint8_t response[9];
 typedef struct micrometer_data
@@ -128,8 +128,9 @@ void update_measurements(micrometer_data_t *store)
     for (uint8_t channel_index = 0; channel_index < 4; channel_index++)
     {
         // Set channel in CD4052B
-        gpio_set_level(SELECT_A, channel_index & 1);
-        gpio_set_level(SELECT_B, channel_index >> 1);
+        // gpio_set_level(SELECT_A, channel_index & 1);
+        // gpio_set_level(SELECT_B, channel_index & 2);
+        // SYS_DELAY(10);
 
         uart_send_bytes(query, sizeof(query));
         SYS_DELAY(QUERY_RESPONSE_TIMEOUT);
@@ -139,10 +140,10 @@ void update_measurements(micrometer_data_t *store)
             printf("Response from Micrometer M%d not received!\n", channel_index + 1);
             continue;
         }
-        uart_read_bytes(UART_PORT_NUM, response, sizeof(response), pdMS_TO_TICKS(50));
-        // for (uint8_t i = 0; i < sizeof(response); i++)
-        //     printf("[BYTE] (%d): %d\n", i, response[i]);
-        // printf("[COUNTER]: %d\n", counter);
+        int num_bytes = uart_read_bytes(UART_PORT_NUM, response, sizeof(response), pdMS_TO_TICKS(50));
+        printf("NUM BYTES = %d\n", num_bytes);
+        for (uint8_t i = 0; i < sizeof(response); i++)
+            printf("[BYTE] (%d): %d\n", i, response[i]);
         // printf("---------------\n");
         uint8_t flag = response[3];
         float data = ((response[5] << 8) | response[6]);
@@ -165,7 +166,7 @@ void print_measurements(micrometer_data_t *store)
     printf("---------------\n");
     for (uint8_t channel_index = 0; channel_index < 4; channel_index++)
     {
-        printf("[M%d]: %c%.3f\n", channel_index + 1, (store->flags & 1) ? (uint8_t)('-') : (uint8_t)('+'), store->data[0]);
+        printf("[M%d]: %c%.3f\n", channel_index + 1, (store->flags & 1) ? (uint8_t)('-') : (uint8_t)('+'), store->data[channel_index]);
     }
     printf("---------------\n");
 }
@@ -234,6 +235,9 @@ void app_main(void)
     ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &strip));
     led_strip_clear(strip);
 
+    gpio_set_level(SELECT_A, 0);
+    gpio_set_level(SELECT_B, 1);
+
     while (1)
     {
         update_button(enable_button);
@@ -251,12 +255,18 @@ void app_main(void)
 
         grade = check_criteria(&measurement_data);
         if (grade == NONE_TRUE)
-            led_strip_set_colour(strip, NUM_LEDS, RED);
+            led_strip_set_colour(strip, NUM_LEDS, palette[RED]);
         else if (grade == PARALELLISM_TRUE_ONLY)
-            led_strip_set_colour(strip, NUM_LEDS, BLUE);
+            led_strip_set_colour(strip, NUM_LEDS, palette[BLUE]);
         else if (grade == PROFILE_NOM_TRUE_ONLY)
-            led_strip_set_colour(strip, NUM_LEDS, YELLOW);
+            led_strip_set_colour(strip, NUM_LEDS, palette[YELLOW]);
         else if (grade == BOTH_TRUE)
-            led_strip_set_colour(strip, NUM_LEDS, GREEN);
+            led_strip_set_colour(strip, NUM_LEDS, palette[GREEN]);
+
+        measurement_data.flags = 0;
+        measurement_data.data[0] = 0;
+        measurement_data.data[1] = 0;
+        measurement_data.data[2] = 0;
+        measurement_data.data[3] = 0;
     }
 }
