@@ -115,14 +115,6 @@ size_t uart_rx_available()
     return len;
 }
 
-void send_query()
-{
-    uart_send_bytes(query, sizeof(query));
-    // printf("---------------\n");
-    // printf("Queried!\n");
-    // printf("---------------\n");
-}
-
 void update_measurements(micrometer_data_t *store)
 {
     for (uint8_t channel_index = 0; channel_index < 4; channel_index++)
@@ -130,9 +122,9 @@ void update_measurements(micrometer_data_t *store)
         // Set channel in CD4052B
         gpio_set_level(SELECT_A, (channel_index % 2));
         gpio_set_level(SELECT_B, (channel_index > 1));
-        SYS_DELAY(100);
-
         uart_flush(UART_PORT_NUM);
+        SYS_DELAY(10);
+
         uart_send_bytes(query, sizeof(query));
         SYS_DELAY(QUERY_RESPONSE_TIMEOUT);
 
@@ -141,11 +133,9 @@ void update_measurements(micrometer_data_t *store)
             printf("Response from Micrometer M%d not received!\n", channel_index + 1);
             continue;
         }
-        int num_bytes = uart_read_bytes(UART_PORT_NUM, response, sizeof(response), pdMS_TO_TICKS(100));
-        printf("NUM BYTES = %d\n", num_bytes);
-        for (uint8_t i = 0; i < sizeof(response); i++)
-            printf("[BYTE] (%d): %d\n", i, response[i]);
-        // printf("---------------\n");
+        uart_read_bytes(UART_PORT_NUM, response, sizeof(response), pdMS_TO_TICKS(100));
+        // for (uint8_t i = 0; i < sizeof(response); i++)
+        //     printf("[BYTE] (%d): %d\n", i, response[i]);
         uint8_t flag = response[3];
         float data = ((response[5] << 8) | response[6]);
         data = data / 1000;
@@ -157,7 +147,6 @@ void update_measurements(micrometer_data_t *store)
         // Resetting
         for (uint8_t i = 0; i < 9; i++)
             response[i] = 0;
-        uart_flush(UART_PORT_NUM);
     }
 }
 
@@ -244,7 +233,7 @@ void app_main(void)
     {
         update_button(enable_button);
         update_button(program_button);
-        SYS_DELAY(1000);
+        SYS_DELAY(20);
 
         if (was_pushed(enable_button))
         {
