@@ -166,7 +166,7 @@ void print_measurements(micrometer_data_t *store)
     printf("---------------\n");
     for (uint8_t channel_index = 0; channel_index < 4; channel_index++)
     {
-        printf("[M%d]: %c%.3f\n", channel_index + 1, (store->flags & 1) ? (uint8_t)('-') : (uint8_t)('+'), store->data[channel_index]);
+        printf("[M%d]: %c%.3f\n", channel_index + 1, (store->flags & 0x01) ? (uint8_t)('-') : (uint8_t)('+'), store->data[channel_index]);
     }
     printf("---------------\n");
 }
