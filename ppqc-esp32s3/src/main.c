@@ -50,7 +50,7 @@ criteria_grade_t grade = NONE_TRUE;
 gpio_config_t gpio_select_config = {
     .pin_bit_mask = SELECT_PIN_BITMASK,
     .mode = GPIO_MODE_OUTPUT,
-    .pull_up_en = GPIO_PULLUP_ENABLE,
+    .pull_up_en = GPIO_PULLUP_DISABLE,
     .pull_down_en = GPIO_PULLDOWN_DISABLE,
     .intr_type = GPIO_INTR_DISABLE};
 
@@ -115,22 +115,15 @@ size_t uart_rx_available()
     return len;
 }
 
-void send_query()
-{
-    uart_send_bytes(query, sizeof(query));
-    // printf("---------------\n");
-    // printf("Queried!\n");
-    // printf("---------------\n");
-}
-
 void update_measurements(micrometer_data_t *store)
 {
     for (uint8_t channel_index = 0; channel_index < 4; channel_index++)
     {
         // Set channel in CD4052B
-        // gpio_set_level(SELECT_A, channel_index & 1);
-        // gpio_set_level(SELECT_B, channel_index & 2);
-        // SYS_DELAY(10);
+        gpio_set_level(SELECT_A, (channel_index % 2));
+        gpio_set_level(SELECT_B, (channel_index > 1));
+        uart_flush(UART_PORT_NUM);
+        SYS_DELAY(10);
 
         uart_send_bytes(query, sizeof(query));
         SYS_DELAY(QUERY_RESPONSE_TIMEOUT);
@@ -140,23 +133,21 @@ void update_measurements(micrometer_data_t *store)
             printf("Response from Micrometer M%d not received!\n", channel_index + 1);
             continue;
         }
-        int num_bytes = uart_read_bytes(UART_PORT_NUM, response, sizeof(response), pdMS_TO_TICKS(50));
-        printf("NUM BYTES = %d\n", num_bytes);
-        for (uint8_t i = 0; i < sizeof(response); i++)
-            printf("[BYTE] (%d): %d\n", i, response[i]);
-        // printf("---------------\n");
+        uart_read_bytes(UART_PORT_NUM, response, sizeof(response), pdMS_TO_TICKS(100));
+        // for (uint8_t i = 0; i < sizeof(response); i++)
+        //     printf("[BYTE] (%d): %d\n", i, response[i]);
         uint8_t flag = response[3];
         float data = ((response[5] << 8) | response[6]);
         data = data / 1000;
 
         // Store Data
-        store->flags = ~(store->flags ^ (flag << channel_index));
+        store->flags = (store->flags & ~(1 << channel_index)) | (flag << channel_index);
         store->data[channel_index] = data;
+        
+        // Resetting
+        for (uint8_t i = 0; i < 9; i++)
+            response[i] = 0;
     }
-    // Resetting
-    for (uint8_t i = 0; i < 9; i++)
-        response[i] = 0;
-    uart_flush(UART_PORT_NUM);
 }
 
 void print_measurements(micrometer_data_t *store)
@@ -235,14 +226,14 @@ void app_main(void)
     ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &strip));
     led_strip_clear(strip);
 
-    gpio_set_level(SELECT_A, 0);
-    gpio_set_level(SELECT_B, 1);
+    // gpio_set_level(SELECT_A, 1);
+    // gpio_set_level(SELECT_B, 0);
 
     while (1)
     {
         update_button(enable_button);
         update_button(program_button);
-        SYS_DELAY(1000);
+        SYS_DELAY(20);
 
         if (was_pushed(enable_button))
         {
@@ -250,6 +241,7 @@ void app_main(void)
             enable_switch_state = !enable_switch_state;
         }
 
+        uart_flush_input(UART_PORT_NUM);
         update_measurements(&measurement_data);
         print_measurements(&measurement_data);
 
