@@ -123,14 +123,15 @@ void update_measurements(micrometer_data_t *store)
         gpio_set_level(SELECT_A, (channel_index % 2));
         gpio_set_level(SELECT_B, (channel_index > 1));
         uart_flush(UART_PORT_NUM);
-        SYS_DELAY(10);
+
+        SYS_DELAY(QUERY_RESPONSE_TIMEOUT);
 
         uart_send_bytes(query, sizeof(query));
         SYS_DELAY(QUERY_RESPONSE_TIMEOUT);
 
         if (uart_rx_available() == 0)
         {
-            printf("Response from Micrometer M%d not received!\n", channel_index + 1);
+            // printf("Response from Micrometer M%d not received!\n", channel_index + 1);
             continue;
         }
         uart_read_bytes(UART_PORT_NUM, response, sizeof(response), pdMS_TO_TICKS(100));
@@ -157,7 +158,7 @@ void print_measurements(micrometer_data_t *store)
     printf("---------------\n");
     for (uint8_t channel_index = 0; channel_index < 4; channel_index++)
     {
-        printf("[M%d]: %c%.3f\n", channel_index + 1, (store->flags & 0x01) ? (uint8_t)('-') : (uint8_t)('+'), store->data[channel_index]);
+        printf("[M%d]: %c%.3f\n", channel_index + 1, (store->flags & (0x01 << channel_index)) ? (uint8_t)('-') : (uint8_t)('+'), store->data[channel_index]);
     }
     printf("---------------\n");
 }
@@ -246,6 +247,7 @@ void app_main(void)
         print_measurements(&measurement_data);
 
         grade = check_criteria(&measurement_data);
+        printf("Grade: %d\n", grade);
         if (grade == NONE_TRUE)
             led_strip_set_colour(strip, NUM_LEDS, palette[RED]);
         else if (grade == PARALELLISM_TRUE_ONLY)
