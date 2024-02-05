@@ -73,7 +73,7 @@ void app_main(void)
     ESP_LOGI(TAG, "Using SPI peripheral");
 
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
-    host.max_freq_khz = 1000;
+    host.max_freq_khz = 4000;
     spi_bus_config_t bus_cfg = {
         .mosi_io_num = PIN_NUM_MOSI,
         .miso_io_num = PIN_NUM_MISO,
