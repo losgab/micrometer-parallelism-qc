@@ -25,6 +25,13 @@
         "typeinfo": "c",
         "utility": "c",
         "gpio.h": "c",
-        "easy_led_strip.h": "c"
+        "easy_led_strip.h": "c",
+        "esp_vfs_fat.h": "c",
+        "sdspi_host.h": "c",
+        "sdmmc_types.h": "c",
+        "wear_levelling.h": "c",
+        "unistd.h": "c",
+        "string.h": "c",
+        "sdmmc_cmd.h": "c"
     }
 }

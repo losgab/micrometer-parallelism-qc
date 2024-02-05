@@ -5,6 +5,9 @@
 #include <driver/uart.h>
 #include <driver/gpio.h>
 
+#include <esp_err.h>
+#include <esp_log.h>
+
 #include <Button.h>
 
 #define SYS_DELAY(x) vTaskDelay(pdMS_TO_TICKS(x))
@@ -84,6 +87,19 @@ led_strip_rmt_config_t rmt_config = {
 #endif
 };
 
+// SD card Stuff
+#include <esp_vfs_fat.h>
+#include "sdmmc_cmd.h"
+#include <string.h>
+#include <sys/unistd.h>
+#include <sys/stat.h>
+static const char *TAG = "example";
+
+#define MOUNT_POINT "/sdcard"
+#define SPI2_SCK 8
+#define SPI2_MISO 9
+#define SPI2_MOSI 10
+
 // Prototype UART Library Functions
 void uart_init()
 {
@@ -144,7 +160,7 @@ void update_measurements(micrometer_data_t *store)
         // Store Data
         store->flags = (store->flags & ~(1 << channel_index)) | (flag << channel_index);
         store->data[channel_index] = data;
-        
+
         // Resetting
         for (uint8_t i = 0; i < 9; i++)
             response[i] = 0;
@@ -188,7 +204,7 @@ criteria_grade_t check_criteria(micrometer_data_t *store)
 
     // Calculates absolute parallelism value
     float parallelism = ((max - min) >= 0) ? (max - min) : (min - max);
-    printf("[Parallelism]: %.3f\n", parallelism);
+    // printf("[Parallelism]: %.3f\n", parallelism);
 
     // Compute profile nominalness
     uint8_t pronom_flag = 0; // If this is > 0 after calculations, then profile nominality is outside of spec, ie. red light
@@ -208,10 +224,67 @@ criteria_grade_t check_criteria(micrometer_data_t *store)
     return ERROR;
 }
 
+void sdspi_init()
+{
+    esp_err_t ret;
+    sdmmc_host_t host = SDSPI_HOST_DEFAULT();
+    spi_bus_config_t buscfg = {
+        .miso_io_num = SPI2_MISO,
+        .mosi_io_num = SPI2_MOSI,
+        .sclk_io_num = SPI2_SCK,
+        .quadwp_io_num = -1,
+        .quadhd_io_num = -1,
+        .max_transfer_sz = 4000};
+    ret = spi_bus_initialize(host.slot, &buscfg, SPI_DMA_CH_AUTO);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to initialize bus.");
+        return;
+    }
+
+    esp_vfs_fat_sdmmc_mount_config_t mount_config = {
+#ifdef CONFIG_EXAMPLE_FORMAT_IF_MOUNT_FAILED
+        .format_if_mount_failed = true,
+#else
+        .format_if_mount_failed = false,
+#endif // EXAMPLE_FORMAT_IF_MOUNT_FAILED
+        .max_files = 5,
+        .allocation_unit_size = 16 * 1024};
+    sdmmc_card_t *card;
+    const char mount_point[] = MOUNT_POINT;
+
+    sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
+    slot_config.host_id = host.slot;
+    // slot_config.gpio_cs = GPIO_NUM_14;
+
+    ESP_LOGI(TAG, "Mounting filesystem");
+    ret = esp_vfs_fat_sdspi_mount(mount_point, &host, &slot_config, &mount_config, &card);
+
+    if (ret != ESP_OK)
+    {
+        if (ret == ESP_FAIL)
+        {
+            ESP_LOGE(TAG, "Failed to mount filesystem. "
+                          "If you want the card to be formatted, set the CONFIG_EXAMPLE_FORMAT_IF_MOUNT_FAILED menuconfig option.");
+        }
+        else
+        {
+            ESP_LOGE(TAG, "Failed to initialize the card (%s). "
+                          "Make sure SD card lines have pull-up resistors in place.",
+                     esp_err_to_name(ret));
+        }
+        return;
+    }
+    ESP_LOGI(TAG, "Filesystem mounted");
+
+    // Card has been initialized, print its properties
+    sdmmc_card_print_info(stdout, card);
+}
+
 void app_main(void)
 {
     // Initialise UART & GPIO
     uart_init();
+    printf("Bruh!\n");
     ESP_ERROR_CHECK(gpio_config(&gpio_select_config));
 
     // Button Config
@@ -222,13 +295,14 @@ void app_main(void)
     micrometer_data_t measurement_data = {
         .flags = 0,
         .data = {0, 0, 0, 0}};
+    printf("Bruh!\n");
 
     // Initialise LED Strip
     ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &strip));
     led_strip_clear(strip);
 
-    // gpio_set_level(SELECT_A, 1);
-    // gpio_set_level(SELECT_B, 0);
+    printf("Bruh!\n");
+    sdspi_init();
 
     while (1)
     {
@@ -244,10 +318,10 @@ void app_main(void)
 
         uart_flush_input(UART_PORT_NUM);
         update_measurements(&measurement_data);
-        print_measurements(&measurement_data);
+        // print_measurements(&measurement_data);
 
         grade = check_criteria(&measurement_data);
-        printf("Grade: %d\n", grade);
+        // printf("Grade: %d\n", grade);
         if (grade == NONE_TRUE)
             led_strip_set_colour(strip, NUM_LEDS, palette[RED]);
         else if (grade == PARALELLISM_TRUE_ONLY)
