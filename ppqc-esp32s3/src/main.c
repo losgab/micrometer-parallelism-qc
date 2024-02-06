@@ -27,6 +27,7 @@ typedef struct micrometer_data
 {
     uint8_t flags;
     float data[4];
+    criteria_grade_t grade;
 } micrometer_data_t;
 
 // Acceptance Criteria
@@ -95,6 +96,7 @@ led_strip_rmt_config_t rmt_config = {
 #include <sys/stat.h>
 static const char *TAG = "example";
 
+#define FORMAT_IF_MOUNT_FAIL true
 #define MOUNT_POINT "/sdcard"
 #define SPI2_SCK 8
 #define SPI2_MISO 9
@@ -147,7 +149,7 @@ void update_measurements(micrometer_data_t *store)
 
         if (uart_rx_available() == 0)
         {
-            // printf("Response from Micrometer M%d not received!\n", channel_index + 1);
+            printf("Response from Micrometer M%d not received!\n", channel_index + 1);
             continue;
         }
         uart_read_bytes(UART_PORT_NUM, response, sizeof(response), pdMS_TO_TICKS(100));
@@ -214,51 +216,59 @@ criteria_grade_t check_criteria(micrometer_data_t *store)
     pronom_flag = ((PROFILE_NOMINAL - PROFILE_LO_OFFSET <= store->data[3]) && (store->data[3] <= PROFILE_NOMINAL + PROFILE_HI_OFFSET)) ? pronom_flag : pronom_flag | 8;
 
     if (pronom_flag > 0 && parallelism > PARALLELISM)
-        return NONE_TRUE; // Profile Nominal outside spec, parallelism outside of spec, RED
-    if (pronom_flag > 0 && parallelism <= PARALLELISM)
-        return PARALELLISM_TRUE_ONLY; // Profile Nominal outside spec, parallelism within spec, BLUE
-    if (pronom_flag == 0 && parallelism > PARALLELISM)
-        return PROFILE_NOM_TRUE_ONLY; // Profile Nominal within spec, parallelism outside spec, YELLOW
-    if (pronom_flag == 0 && parallelism <= PARALLELISM)
-        return BOTH_TRUE; // Profile Nominal within spec, parallelism within spec, GREEN
-    return ERROR;
+        store->grade = NONE_TRUE; // Profile Nominal outside spec, parallelism outside of spec, RED
+    else if (pronom_flag > 0 && parallelism <= PARALLELISM)
+        store->grade = PARALELLISM_TRUE_ONLY; // Profile Nominal outside spec, parallelism within spec, BLUE
+    else if (pronom_flag == 0 && parallelism > PARALLELISM)
+        store->grade = PROFILE_NOM_TRUE_ONLY; // Profile Nominal within spec, parallelism outside spec, YELLOW
+    else if (pronom_flag == 0 && parallelism <= PARALLELISM)
+        store->grade = BOTH_TRUE; // Profile Nominal within spec, parallelism within spec, GREEN
+    else
+        store->grade = ERROR; // Error
+    return store->grade;
 }
 
 void sdspi_init()
 {
     esp_err_t ret;
-    sdmmc_host_t host = SDSPI_HOST_DEFAULT();
-    spi_bus_config_t buscfg = {
-        .miso_io_num = SPI2_MISO,
-        .mosi_io_num = SPI2_MOSI,
-        .sclk_io_num = SPI2_SCK,
-        .quadwp_io_num = -1,
-        .quadhd_io_num = -1,
-        .max_transfer_sz = 4000};
-    ret = spi_bus_initialize(host.slot, &buscfg, SPI_DMA_CH_AUTO);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to initialize bus.");
-        return;
-    }
 
     esp_vfs_fat_sdmmc_mount_config_t mount_config = {
-#ifdef CONFIG_EXAMPLE_FORMAT_IF_MOUNT_FAILED
-        .format_if_mount_failed = true,
-#else
-        .format_if_mount_failed = false,
-#endif // EXAMPLE_FORMAT_IF_MOUNT_FAILED
+        .format_if_mount_failed = FORMAT_IF_MOUNT_FAIL,
         .max_files = 5,
         .allocation_unit_size = 16 * 1024};
     sdmmc_card_t *card;
     const char mount_point[] = MOUNT_POINT;
 
-    sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
-    slot_config.host_id = host.slot;
-    // slot_config.gpio_cs = GPIO_NUM_14;
+    sdmmc_host_t host = SDSPI_HOST_DEFAULT();
+    host.max_freq_khz = 4000;
 
+    spi_bus_config_t bus_cfg = {
+        .mosi_io_num = SPI2_MOSI,
+        .miso_io_num = SPI2_MISO,
+        .sclk_io_num = SPI2_SCK,
+        .quadwp_io_num = -1,
+        .quadhd_io_num = -1,
+        .max_transfer_sz = 4000,
+    };
+    
+    ret = spi_bus_initialize(host.slot, &bus_cfg, SDSPI_DEFAULT_DMA);
+    if (ret != ESP_OK)
+    {
+        ESP_LOGE(TAG, "Failed to initialize bus.");
+        return;
+    }
+
+    // This initializes the slot without card detect (CD) and write protect (WP) signals.
+    // Modify slot_config.gpio_cd and slot_config.gpio_wp if your board has these signals.
+    sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
+    slot_config.gpio_cs = GPIO_NUM_NC;
+    slot_config.host_id = host.slot;
+}
+
+esp_err_t sd_publish(micrometer_data_t *data)
+{
     ESP_LOGI(TAG, "Mounting filesystem");
     ret = esp_vfs_fat_sdspi_mount(mount_point, &host, &slot_config, &mount_config, &card);
-
     if (ret != ESP_OK)
     {
         if (ret == ESP_FAIL)
@@ -272,12 +282,73 @@ void sdspi_init()
                           "Make sure SD card lines have pull-up resistors in place.",
                      esp_err_to_name(ret));
         }
-        return;
+        return ret;
     }
     ESP_LOGI(TAG, "Filesystem mounted");
 
     // Card has been initialized, print its properties
     sdmmc_card_print_info(stdout, card);
+
+    // Use POSIX and C standard library functions to work with files.
+    // First create a file.
+    const char *file_hello = MOUNT_POINT "/hello.txt";
+
+    ESP_LOGI(TAG, "Opening file %s", file_hello);
+    FILE *f = fopen(file_hello, "w");
+    if (f == NULL)
+    {
+        ESP_LOGE(TAG, "Failed to open file for writing");
+        return;
+    }
+    fprintf(f, "Hello %s!\n", card->cid.name);
+    fclose(f);
+    ESP_LOGI(TAG, "File written");
+    const char *file_foo = MOUNT_POINT "/foo.txt";
+
+    // Check if destination file exists before renaming
+    struct stat st;
+    if (stat(file_foo, &st) == 0)
+    {
+        // Delete it if it exists
+        unlink(file_foo);
+    }
+
+    // Rename original file
+    ESP_LOGI(TAG, "Renaming file %s to %s", file_hello, file_foo);
+    if (rename(file_hello, file_foo) != 0)
+    {
+        ESP_LOGE(TAG, "Rename failed");
+        return;
+    }
+
+    // Open renamed file for reading
+    ESP_LOGI(TAG, "Reading file %s", file_foo);
+    f = fopen(file_foo, "r");
+    if (f == NULL)
+    {
+        ESP_LOGE(TAG, "Failed to open file for reading");
+        return;
+    }
+
+    // Read a line from file
+    char line[64];
+    fgets(line, sizeof(line), f);
+    fclose(f);
+
+    // Strip newline
+    char *pos = strchr(line, '\n');
+    if (pos)
+    {
+        *pos = '\0';
+    }
+    ESP_LOGI(TAG, "Read from file: '%s'", line);
+
+    // All done, unmount partition and disable SPI peripheral
+    esp_vfs_fat_sdcard_unmount(mount_point, card);
+    ESP_LOGI(TAG, "Card unmounted");
+
+    // deinitialize the bus after all devices are removed
+    spi_bus_free(host.slot);
 }
 
 void app_main(void)
@@ -294,35 +365,31 @@ void app_main(void)
     // Initialise Micrometer Struct Data
     micrometer_data_t measurement_data = {
         .flags = 0,
-        .data = {0, 0, 0, 0}};
-    printf("Bruh!\n");
+        .data = {0, 0, 0, 0},
+        .grade = NONE_TRUE};
 
     // Initialise LED Strip
     ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &strip));
     led_strip_clear(strip);
 
-    printf("Bruh!\n");
     sdspi_init();
 
     while (1)
     {
         update_button(enable_button);
         update_button(program_button);
-        SYS_DELAY(20);
-
         if (was_pushed(enable_button))
         {
             printf("Enable Button Pushed!\n");
             enable_switch_state = !enable_switch_state;
         }
 
-        uart_flush_input(UART_PORT_NUM);
+        uart_flush(UART_PORT_NUM);
         update_measurements(&measurement_data);
         // print_measurements(&measurement_data);
 
-        grade = check_criteria(&measurement_data);
-        // printf("Grade: %d\n", grade);
-        if (grade == NONE_TRUE)
+        check_criteria(&measurement_data);
+        if (measurement_data.grade == NONE_TRUE)
             led_strip_set_colour(strip, NUM_LEDS, palette[RED]);
         else if (grade == PARALELLISM_TRUE_ONLY)
             led_strip_set_colour(strip, NUM_LEDS, palette[BLUE]);
