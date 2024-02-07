@@ -18,6 +18,17 @@
 #define RX_PIN GPIO_NUM_6
 #define BUFFER_SIZE 4096
 
+// Criteria Constants
+typedef enum CriteriaConstants
+{
+    NONE_TRUE,
+    PARALELLISM_TRUE_ONLY,
+    PROFILE_NOM_TRUE_ONLY,
+    BOTH_TRUE,
+    ERROR
+} criteria_grade_t;
+criteria_grade_t grade = NONE_TRUE;
+
 // Micrometer Query Command
 #define QUERY_FREQ 2000
 #define QUERY_RESPONSE_TIMEOUT 50
@@ -35,17 +46,6 @@ typedef struct micrometer_data
 #define PROFILE_NOMINAL 1.6
 #define PROFILE_HI_OFFSET 0.2
 #define PROFILE_LO_OFFSET 0.1
-
-// Criteria Constants
-typedef enum CriteriaConstants
-{
-    NONE_TRUE,
-    PARALELLISM_TRUE_ONLY,
-    PROFILE_NOM_TRUE_ONLY,
-    BOTH_TRUE,
-    ERROR
-} criteria_grade_t;
-criteria_grade_t grade = NONE_TRUE;
 
 // GPIO Stuff For UART Channel select through CD4052BE IC
 #define SELECT_A GPIO_NUM_3
@@ -94,13 +94,21 @@ led_strip_rmt_config_t rmt_config = {
 #include <string.h>
 #include <sys/unistd.h>
 #include <sys/stat.h>
-static const char *TAG = "example";
 
 #define FORMAT_IF_MOUNT_FAIL true
 #define MOUNT_POINT "/sdcard"
 #define SPI2_SCK 8
 #define SPI2_MISO 9
 #define SPI2_MOSI 10
+static const char *TAG = "example";
+typedef struct sd_card
+{
+    const char *mount_path;
+    sdmmc_host_t host;
+    sdspi_device_config_t slot_config;
+    esp_vfs_fat_sdmmc_mount_config_t mount_config;
+    sdmmc_card_t *card;
+} sd_card_fields_t;
 
 // Prototype UART Library Functions
 void uart_init()
@@ -228,16 +236,19 @@ criteria_grade_t check_criteria(micrometer_data_t *store)
     return store->grade;
 }
 
-void sdspi_init()
+void sdspi_init(sd_card_fields_t *fields)
 {
     esp_err_t ret;
+
+    fields->mount_path = MOUNT_POINT;
+
+    const char mount_point[] = MOUNT_POINT;
 
     esp_vfs_fat_sdmmc_mount_config_t mount_config = {
         .format_if_mount_failed = FORMAT_IF_MOUNT_FAIL,
         .max_files = 5,
         .allocation_unit_size = 16 * 1024};
     sdmmc_card_t *card;
-    const char mount_point[] = MOUNT_POINT;
 
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
     host.max_freq_khz = 4000;
@@ -250,7 +261,6 @@ void sdspi_init()
         .quadhd_io_num = -1,
         .max_transfer_sz = 4000,
     };
-    
     ret = spi_bus_initialize(host.slot, &bus_cfg, SDSPI_DEFAULT_DMA);
     if (ret != ESP_OK)
     {
@@ -265,10 +275,12 @@ void sdspi_init()
     slot_config.host_id = host.slot;
 }
 
-esp_err_t sd_publish(micrometer_data_t *data)
+esp_err_t sd_publish(sd_card_fields_t *fields)
 {
+    esp_err_t ret;
+
     ESP_LOGI(TAG, "Mounting filesystem");
-    ret = esp_vfs_fat_sdspi_mount(mount_point, &host, &slot_config, &mount_config, &card);
+    ret = esp_vfs_fat_sdspi_mount(fields->mount_path, &fields->host, &fields->slot_config, &fields->mount_config, &fields->card);
     if (ret != ESP_OK)
     {
         if (ret == ESP_FAIL)
@@ -355,7 +367,6 @@ void app_main(void)
 {
     // Initialise UART & GPIO
     uart_init();
-    printf("Bruh!\n");
     ESP_ERROR_CHECK(gpio_config(&gpio_select_config));
 
     // Button Config
@@ -372,7 +383,9 @@ void app_main(void)
     ESP_ERROR_CHECK(led_strip_new_rmt_device(&strip_config, &rmt_config, &strip));
     led_strip_clear(strip);
 
-    sdspi_init();
+    // Initialise SD Card fields
+    sd_card_fields_t *fields;
+    sdspi_init(fields);
 
     while (1)
     {
