@@ -1,5 +1,5 @@
 #include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
+// #include <freertos/task.h>
 #include <freertos/queue.h>
 #include <freertos/timers.h>
 #include <driver/uart.h>
@@ -27,10 +27,8 @@ typedef enum CriteriaConstants
     BOTH_TRUE,
     ERROR
 } criteria_grade_t;
-criteria_grade_t grade = NONE_TRUE;
 
 // Micrometer Query Command
-#define QUERY_FREQ 2000
 #define QUERY_RESPONSE_TIMEOUT 50
 const uint8_t query[] = {0x01, 0x03, 0x00, 0x00, 0x00, 0x02, 0xC4, 0x0B}; // Micrometer Specific Query Instruction
 uint8_t response[9];
@@ -38,6 +36,8 @@ typedef struct micrometer_data
 {
     uint8_t flags;
     float data[4];
+    float errors[4];
+    float parallelism_score;
     criteria_grade_t grade;
 } micrometer_data_t;
 
@@ -213,7 +213,7 @@ criteria_grade_t check_criteria(micrometer_data_t *store)
         min = store->data[3];
 
     // Calculates absolute parallelism value
-    float parallelism = ((max - min) >= 0) ? (max - min) : (min - max);
+    store->parallelism_score = ((max - min) >= 0) ? (max - min) : (min - max);
     // printf("[Parallelism]: %.3f\n", parallelism);
 
     // Compute profile nominalness
@@ -223,35 +223,39 @@ criteria_grade_t check_criteria(micrometer_data_t *store)
     pronom_flag = ((PROFILE_NOMINAL - PROFILE_LO_OFFSET <= store->data[2]) && (store->data[2] <= PROFILE_NOMINAL + PROFILE_HI_OFFSET)) ? pronom_flag : pronom_flag | 4;
     pronom_flag = ((PROFILE_NOMINAL - PROFILE_LO_OFFSET <= store->data[3]) && (store->data[3] <= PROFILE_NOMINAL + PROFILE_HI_OFFSET)) ? pronom_flag : pronom_flag | 8;
 
-    if (pronom_flag > 0 && parallelism > PARALLELISM)
+    store->errors[0] = store->data[0] - PROFILE_NOMINAL;
+    store->errors[1] = store->data[1] - PROFILE_NOMINAL;
+    store->errors[2] = store->data[2] - PROFILE_NOMINAL;
+    store->errors[3] = store->data[3] - PROFILE_NOMINAL;
+
+    if (pronom_flag > 0 && store->parallelism_score > PARALLELISM)
         store->grade = NONE_TRUE; // Profile Nominal outside spec, parallelism outside of spec, RED
-    else if (pronom_flag > 0 && parallelism <= PARALLELISM)
+    else if (pronom_flag > 0 && store->parallelism_score <= PARALLELISM)
         store->grade = PARALELLISM_TRUE_ONLY; // Profile Nominal outside spec, parallelism within spec, BLUE
-    else if (pronom_flag == 0 && parallelism > PARALLELISM)
+    else if (pronom_flag == 0 && store->parallelism_score > PARALLELISM)
         store->grade = PROFILE_NOM_TRUE_ONLY; // Profile Nominal within spec, parallelism outside spec, YELLOW
-    else if (pronom_flag == 0 && parallelism <= PARALLELISM)
+    else if (pronom_flag == 0 && store->parallelism_score <= PARALLELISM)
         store->grade = BOTH_TRUE; // Profile Nominal within spec, parallelism within spec, GREEN
     else
         store->grade = ERROR; // Error
     return store->grade;
 }
 
-void sdspi_init(sd_card_fields_t *fields)
+esp_err_t sdspi_init(sd_card_fields_t *fields)
 {
     esp_err_t ret;
 
     fields->mount_path = MOUNT_POINT;
-
-    const char mount_point[] = MOUNT_POINT;
-
-    esp_vfs_fat_sdmmc_mount_config_t mount_config = {
-        .format_if_mount_failed = FORMAT_IF_MOUNT_FAIL,
-        .max_files = 5,
-        .allocation_unit_size = 16 * 1024};
-    sdmmc_card_t *card;
-
-    sdmmc_host_t host = SDSPI_HOST_DEFAULT();
-    host.max_freq_khz = 4000;
+    fields->host = (sdmmc_host_t)SDSPI_HOST_DEFAULT();
+    fields->host.max_freq_khz = 4000;
+    fields->slot_config.host_id = SPI2_HOST;
+    fields->slot_config.gpio_cs = GPIO_NUM_NC;
+    fields->slot_config.gpio_cd = SDSPI_SLOT_NO_CD;
+    fields->slot_config.gpio_wp = SDSPI_SLOT_NO_WP;
+    fields->slot_config.gpio_int = GPIO_NUM_NC;
+    fields->mount_config.format_if_mount_failed = FORMAT_IF_MOUNT_FAIL;
+    fields->mount_config.max_files = 5;
+    fields->mount_config.allocation_unit_size = 16 * 1024;
 
     spi_bus_config_t bus_cfg = {
         .mosi_io_num = SPI2_MOSI,
@@ -261,21 +265,15 @@ void sdspi_init(sd_card_fields_t *fields)
         .quadhd_io_num = -1,
         .max_transfer_sz = 4000,
     };
-    ret = spi_bus_initialize(host.slot, &bus_cfg, SDSPI_DEFAULT_DMA);
+    ret = spi_bus_initialize(fields->host.slot, &bus_cfg, SDSPI_DEFAULT_DMA);
     if (ret != ESP_OK)
     {
         ESP_LOGE(TAG, "Failed to initialize bus.");
-        return;
     }
-
-    // This initializes the slot without card detect (CD) and write protect (WP) signals.
-    // Modify slot_config.gpio_cd and slot_config.gpio_wp if your board has these signals.
-    sdspi_device_config_t slot_config = SDSPI_DEVICE_CONFIG_DEFAULT();
-    slot_config.gpio_cs = GPIO_NUM_NC;
-    slot_config.host_id = host.slot;
+    return ret;
 }
 
-esp_err_t sd_publish(sd_card_fields_t *fields)
+esp_err_t sd_publish(sd_card_fields_t *fields, micrometer_data_t *data)
 {
     esp_err_t ret;
 
@@ -298,6 +296,8 @@ esp_err_t sd_publish(sd_card_fields_t *fields)
     }
     ESP_LOGI(TAG, "Filesystem mounted");
 
+    sdmmc_card_t *card = fields->card;
+
     // Card has been initialized, print its properties
     sdmmc_card_print_info(stdout, card);
 
@@ -310,57 +310,66 @@ esp_err_t sd_publish(sd_card_fields_t *fields)
     if (f == NULL)
     {
         ESP_LOGE(TAG, "Failed to open file for writing");
-        return;
+        return ESP_FAIL;
     }
+
+    // Write stuff to file.
     fprintf(f, "Hello %s!\n", card->cid.name);
+
+    // Read last content index
+
+    fprintf(f, "[%d] [MEASUREMENT] | (1): %.3f | (2): %.3f | (3): %.3f | (4): %.3f\n", 0, data->data[0], data->data[1], data->data[2], data->data[3]);
+    fprintf(f, "[%d] [ERROR]       | (1): %.3f | (2): %.3f | (3): %.3f | (4): %.3f\n", 0, data->errors[0], data->errors[1], data->errors[2], data->errors[3]);
+    fprintf(f, "[%d] [PARALLELISM] | %.3f\n", 0, data->parallelism_score);
+
     fclose(f);
     ESP_LOGI(TAG, "File written");
-    const char *file_foo = MOUNT_POINT "/foo.txt";
+    // const char *file_foo = MOUNT_POINT "/foo.txt";
 
-    // Check if destination file exists before renaming
-    struct stat st;
-    if (stat(file_foo, &st) == 0)
-    {
-        // Delete it if it exists
-        unlink(file_foo);
-    }
+    // // Check if destination file exists before renaming
+    // struct stat st;
+    // if (stat(file_foo, &st) == 0)
+    // {
+    //     // Delete it if it exists
+    //     unlink(file_foo);
+    // }
 
-    // Rename original file
-    ESP_LOGI(TAG, "Renaming file %s to %s", file_hello, file_foo);
-    if (rename(file_hello, file_foo) != 0)
-    {
-        ESP_LOGE(TAG, "Rename failed");
-        return;
-    }
+    // // Rename original file
+    // ESP_LOGI(TAG, "Renaming file %s to %s", file_hello, file_foo);
+    // if (rename(file_hello, file_foo) != 0)
+    // {
+    //     ESP_LOGE(TAG, "Rename failed");
+    //     return;
+    // }
 
-    // Open renamed file for reading
-    ESP_LOGI(TAG, "Reading file %s", file_foo);
-    f = fopen(file_foo, "r");
-    if (f == NULL)
-    {
-        ESP_LOGE(TAG, "Failed to open file for reading");
-        return;
-    }
+    // // Open renamed file for reading
+    // ESP_LOGI(TAG, "Reading file %s", file_foo);
+    // f = fopen(file_foo, "r");
+    // if (f == NULL)
+    // {
+    //     ESP_LOGE(TAG, "Failed to open file for reading");
+    //     return;
+    // }
 
-    // Read a line from file
-    char line[64];
-    fgets(line, sizeof(line), f);
-    fclose(f);
+    // // Read a line from file
+    // char line[64];
+    // fgets(line, sizeof(line), f);
+    // fclose(f);
 
-    // Strip newline
-    char *pos = strchr(line, '\n');
-    if (pos)
-    {
-        *pos = '\0';
-    }
-    ESP_LOGI(TAG, "Read from file: '%s'", line);
+    // // Strip newline
+    // char *pos = strchr(line, '\n');
+    // if (pos)
+    // {
+    //     *pos = '\0';
+    // }
+    // ESP_LOGI(TAG, "Read from file: '%s'", line);
 
     // All done, unmount partition and disable SPI peripheral
-    esp_vfs_fat_sdcard_unmount(mount_point, card);
+    esp_vfs_fat_sdcard_unmount(fields->mount_path, card);
     ESP_LOGI(TAG, "Card unmounted");
 
     // deinitialize the bus after all devices are removed
-    spi_bus_free(host.slot);
+    return ESP_OK;
 }
 
 void app_main(void)
@@ -377,6 +386,8 @@ void app_main(void)
     micrometer_data_t measurement_data = {
         .flags = 0,
         .data = {0, 0, 0, 0},
+        .errors = {0, 0, 0, 0},
+        .parallelism_score = 0,
         .grade = NONE_TRUE};
 
     // Initialise LED Strip
@@ -384,8 +395,8 @@ void app_main(void)
     led_strip_clear(strip);
 
     // Initialise SD Card fields
-    sd_card_fields_t *fields;
-    sdspi_init(fields);
+    sd_card_fields_t fields;
+    sdspi_init(&fields);
 
     while (1)
     {
@@ -396,6 +407,16 @@ void app_main(void)
             printf("Enable Button Pushed!\n");
             enable_switch_state = !enable_switch_state;
         }
+        if (was_pushed(program_button))
+        {
+            led_strip_set_colour(strip, NUM_LEDS, palette[AQUA]);
+            esp_err_t ret = sd_publish(&fields, &measurement_data);
+            if (ret != ESP_OK)
+                led_strip_set_colour(strip, NUM_LEDS, palette[RED]);
+            else
+                led_strip_set_colour(strip, NUM_LEDS, palette[GREEN]);
+            SYS_DELAY(1000);
+        }
 
         uart_flush(UART_PORT_NUM);
         update_measurements(&measurement_data);
@@ -404,11 +425,11 @@ void app_main(void)
         check_criteria(&measurement_data);
         if (measurement_data.grade == NONE_TRUE)
             led_strip_set_colour(strip, NUM_LEDS, palette[RED]);
-        else if (grade == PARALELLISM_TRUE_ONLY)
+        else if (measurement_data.grade == PARALELLISM_TRUE_ONLY)
             led_strip_set_colour(strip, NUM_LEDS, palette[BLUE]);
-        else if (grade == PROFILE_NOM_TRUE_ONLY)
+        else if (measurement_data.grade == PROFILE_NOM_TRUE_ONLY)
             led_strip_set_colour(strip, NUM_LEDS, palette[YELLOW]);
-        else if (grade == BOTH_TRUE)
+        else if (measurement_data.grade == BOTH_TRUE)
             led_strip_set_colour(strip, NUM_LEDS, palette[GREEN]);
 
         measurement_data.flags = 0;

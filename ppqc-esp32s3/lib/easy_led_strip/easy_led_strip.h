@@ -1,6 +1,14 @@
+/*
+    Convenience Library for Addressable LED Strips & Colours
+
+    @author Gabriel Thien 2024
+*/
 #pragma once
 
 #include <led_strip.h>
+
+#define MAX_COLOURS 6
+#define CHANNELS 3
 
 enum colour // Colours
 {
@@ -12,7 +20,7 @@ enum colour // Colours
     MAGENTA, // 255, 0, 255
 };
 
-extern const uint8_t palette[6][3];
+extern const uint8_t palette[MAX_COLOURS][CHANNELS];
 
 /**
  * @brief Convenience function for setting colour of the LED strip
