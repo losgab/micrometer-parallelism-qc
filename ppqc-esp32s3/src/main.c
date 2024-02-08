@@ -8,8 +8,6 @@
 #include <esp_err.h>
 #include <esp_log.h>
 
-#include <Button.h>
-
 #define SYS_DELAY(x) vTaskDelay(pdMS_TO_TICKS(x))
 
 // UART Stuff
@@ -59,6 +57,7 @@ gpio_config_t gpio_select_config = {
     .intr_type = GPIO_INTR_DISABLE};
 
 // Button Stuff
+#include <Button.h>
 #define PROGRAM_SWITCH_PIN GPIO_NUM_1
 #define ENABLE_SWITCH_PIN GPIO_NUM_44
 button_t program_button;
@@ -89,18 +88,18 @@ led_strip_rmt_config_t rmt_config = {
 };
 
 // SD card Stuff
-#include <esp_vfs_fat.h>
-#include "sdmmc_cmd.h"
 #include <string.h>
 #include <sys/unistd.h>
 #include <sys/stat.h>
+#include <esp_vfs_fat.h>
+#include "sdmmc_cmd.h"
 
 #define FORMAT_IF_MOUNT_FAIL true
 #define MOUNT_POINT "/sdcard"
-#define SPI2_SCK 8
-#define SPI2_MISO 9
-#define SPI2_MOSI 10
-static const char *TAG = "example";
+#define SPI2_SCK GPIO_NUM_8
+#define SPI2_MISO GPIO_NUM_9
+#define SPI2_MOSI GPIO_NUM_10
+static const char *TAG = "APPLICATION";
 typedef struct sd_card
 {
     const char *mount_path;
@@ -306,23 +305,41 @@ esp_err_t sd_publish(sd_card_fields_t *fields, micrometer_data_t *data)
     const char *file_hello = MOUNT_POINT "/hello.txt";
 
     ESP_LOGI(TAG, "Opening file %s", file_hello);
-    FILE *f = fopen(file_hello, "w");
+    FILE *f = fopen(file_hello, "r+");
     if (f == NULL)
     {
         ESP_LOGE(TAG, "Failed to open file for writing");
         return ESP_FAIL;
     }
 
-    // Write stuff to file.
-    fprintf(f, "Hello %s!\n", card->cid.name);
+    // Get last content index
+    fseek(f, 0, SEEK_SET);
+    int counter;
+    fscanf(f, "%d", &counter);
+    printf("CONTENT COUNT: %d\n", counter);
 
-    // Read last content index
+    // Go to end of file to append
+    fseek(f, 0, SEEK_END);
 
-    fprintf(f, "[%d] [MEASUREMENT] | (1): %.3f | (2): %.3f | (3): %.3f | (4): %.3f\n", 0, data->data[0], data->data[1], data->data[2], data->data[3]);
-    fprintf(f, "[%d] [ERROR]       | (1): %.3f | (2): %.3f | (3): %.3f | (4): %.3f\n", 0, data->errors[0], data->errors[1], data->errors[2], data->errors[3]);
-    fprintf(f, "[%d] [PARALLELISM] | %.3f\n", 0, data->parallelism_score);
+    fprintf(f, "[%d] [MEASUREMENT] | ", counter);
+    for (uint8_t i = 0; i < 4; i++)
+        fprintf(f, "(%d): %c%.3f |", i + 1, (data->flags & (0x01 << i)) ? (uint8_t)('-') : (uint8_t)('+'), data->data[i]);
+    fprintf(f, "\n[%d] [ERROR]       | ", counter);
+    for (uint8_t i = 0; i < 4; i++)
+        fprintf(f, "(%d): %+.3f |", i + 1, data->errors[i]);
+    fprintf(f, "\n[%d] [PARALLELISM] | %+.3f\n", counter, data->parallelism_score);
+    fprintf(f, "-----------------------------\n");
+
+    // Update the measurement counter
+    fseek(f, 0, SEEK_SET);
+    fprintf(f, "%d\n", counter + 1);
+
+    fseek(f, 0, SEEK_SET);
+    fscanf(f, "%d", &counter);
+    printf("CONTENT COUNT: %d\n", counter);
 
     fclose(f);
+
     ESP_LOGI(TAG, "File written");
     // const char *file_foo = MOUNT_POINT "/foo.txt";
 
@@ -396,8 +413,14 @@ void app_main(void)
 
     // Initialise SD Card fields
     sd_card_fields_t fields;
-    sdspi_init(&fields);
+    esp_err_t ret = sdspi_init(&fields);
 
+    // ret = sd_publish(&fields, &measurement_data);
+    // if (ret != ESP_OK)
+    // {
+    //     // printf("BRUHHHHHHH!\n");
+    //     SYS_DELAY(2000);
+    // }
     while (1)
     {
         update_button(enable_button);

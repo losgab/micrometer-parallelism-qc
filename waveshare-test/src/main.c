@@ -40,14 +40,15 @@ static const char *TAG = "example";
 
 // Pin assignments can be set in menuconfig, see "SD SPI Example Configuration" menu.
 // You can also change the pin assignments here by changing the following 4 lines.
-#define PIN_NUM_MISO  GPIO_NUM_37
-#define PIN_NUM_MOSI  GPIO_NUM_35
-#define PIN_NUM_CLK   GPIO_NUM_36
-#define PIN_NUM_CS    GPIO_NUM_34
+#define PIN_NUM_MISO  GPIO_NUM_9
+#define PIN_NUM_MOSI  GPIO_NUM_10
+#define PIN_NUM_CLK   GPIO_NUM_8
+#define PIN_NUM_CS    GPIO_NUM_NC
 
 
 void app_main(void)
 {
+    printf("BRUHHHHHH\n");
     esp_err_t ret;
 
     // Options for mounting the filesystem.

@@ -711,7 +711,7 @@ CONFIG_RTC_CLOCK_BBPLL_POWER_ON_WITH_USB=y
 #
 # Peripheral Control
 #
-CONFIG_PERIPH_CTRL_FUNC_IN_IRAM=y
+# CONFIG_PERIPH_CTRL_FUNC_IN_IRAM is not set
 # end of Peripheral Control
 
 #
