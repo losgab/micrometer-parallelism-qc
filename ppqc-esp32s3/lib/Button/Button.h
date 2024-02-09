@@ -11,7 +11,7 @@
 
 typedef struct Button
 {
-    uint8_t pin;
+    gpio_num_t pin;
     uint8_t last_state;
     uint8_t pushed;
     // uint8_t pressed;

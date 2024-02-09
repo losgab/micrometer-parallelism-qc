@@ -67,7 +67,7 @@ uint8_t enable_switch_state = 0;
 // LED Strip Configuration
 #include <led_strip.h>
 #include "easy_led_strip.h"
-#define NUM_LEDS 6
+#define NUM_LEDS 4
 #define LED_STRIP_PIN GPIO_NUM_2
 
 led_strip_handle_t strip;
@@ -96,9 +96,9 @@ led_strip_rmt_config_t rmt_config = {
 
 #define FORMAT_IF_MOUNT_FAIL true
 #define MOUNT_POINT "/sdcard"
-#define SPI2_SCK GPIO_NUM_8
-#define SPI2_MISO GPIO_NUM_9
-#define SPI2_MOSI GPIO_NUM_10
+#define SPI2_SCK GPIO_NUM_7
+#define SPI2_MISO GPIO_NUM_8
+#define SPI2_MOSI GPIO_NUM_9 
 static const char *TAG = "APPLICATION";
 typedef struct sd_card
 {
@@ -433,12 +433,13 @@ void app_main(void)
         if (was_pushed(program_button))
         {
             led_strip_set_colour(strip, NUM_LEDS, palette[AQUA]);
+            SYS_DELAY(1000);
             esp_err_t ret = sd_publish(&fields, &measurement_data);
             if (ret != ESP_OK)
                 led_strip_set_colour(strip, NUM_LEDS, palette[RED]);
             else
                 led_strip_set_colour(strip, NUM_LEDS, palette[GREEN]);
-            SYS_DELAY(1000);
+            SYS_DELAY(3000);
         }
 
         uart_flush(UART_PORT_NUM);

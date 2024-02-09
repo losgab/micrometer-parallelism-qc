@@ -32,6 +32,8 @@
         "wear_levelling.h": "c",
         "unistd.h": "c",
         "string.h": "c",
-        "sdmmc_cmd.h": "c"
+        "sdmmc_cmd.h": "c",
+        "led_strip_interface.h": "c",
+        "rmt_encoder.h": "c"
     }
 }
