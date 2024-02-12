@@ -237,6 +237,7 @@ criteria_grade_t check_criteria(micrometer_data_t *store)
         store->grade = BOTH_TRUE; // Profile Nominal within spec, parallelism within spec, GREEN
     else
         store->grade = ERROR; // Error
+    printf("GRADE: %d\n", store->grade);
     return store->grade;
 }
 
@@ -444,7 +445,7 @@ void app_main(void)
 
         uart_flush(UART_PORT_NUM);
         update_measurements(&measurement_data);
-        // print_measurements(&measurement_data);
+        print_measurements(&measurement_data);
 
         check_criteria(&measurement_data);
         if (measurement_data.grade == NONE_TRUE)
