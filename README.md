@@ -13,3 +13,4 @@
 ### Version 2
 - Designed custom PCB with EasyEDA
 - Simplified measurement gathering by multiplexing 4 RS232 measurement channels through CD4052BE IC
+- ESP32-S3 MCU based
