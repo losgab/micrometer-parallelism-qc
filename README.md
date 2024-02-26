@@ -7,7 +7,6 @@
 - Designed PLC control board using EasyEDA
 
 ### Version 1
-- Custom built electronics platforms for logging results on local SD card storage via SPI
 - Involved asynchronous measurement gathering through 4 Software Serial channels
 
 ### Version 2
