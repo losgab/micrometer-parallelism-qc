@@ -157,6 +157,8 @@ void update_measurements(micrometer_data_t *store)
         if (uart_rx_available() == 0)
         {
             printf("Response from Micrometer M%d not received!\n", channel_index + 1);
+            // Reset if no response
+            store->data[channel_index] = 0;
             continue;
         }
         uart_read_bytes(UART_PORT_NUM, response, sizeof(response), pdMS_TO_TICKS(100));
@@ -457,10 +459,10 @@ void app_main(void)
         else if (measurement_data.grade == BOTH_TRUE)
             led_strip_set_colour(strip, NUM_LEDS, palette[GREEN]);
 
-        measurement_data.flags = 0;
-        measurement_data.data[0] = 0;
-        measurement_data.data[1] = 0;
-        measurement_data.data[2] = 0;
-        measurement_data.data[3] = 0;
+        // measurement_data.flags = 0;
+        // measurement_data.data[0] = 0;
+        // measurement_data.data[1] = 0;
+        // measurement_data.data[2] = 0;
+        // measurement_data.data[3] = 0;
     }
 }
