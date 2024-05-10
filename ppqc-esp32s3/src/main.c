@@ -98,7 +98,7 @@ led_strip_rmt_config_t rmt_config = {
 #define MOUNT_POINT "/sdcard"
 #define SPI2_SCK GPIO_NUM_7
 #define SPI2_MISO GPIO_NUM_8
-#define SPI2_MOSI GPIO_NUM_9 
+#define SPI2_MOSI GPIO_NUM_9
 static const char *TAG = "APPLICATION";
 typedef struct sd_card
 {
@@ -159,6 +159,7 @@ void update_measurements(micrometer_data_t *store)
             printf("Response from Micrometer M%d not received!\n", channel_index + 1);
             // Reset if no response
             store->data[channel_index] = 0;
+            store->flags = (store->flags & ~(1 << channel_index)) | (0 << channel_index);
             continue;
         }
         uart_read_bytes(UART_PORT_NUM, response, sizeof(response), pdMS_TO_TICKS(100));
@@ -192,6 +193,15 @@ void print_measurements(micrometer_data_t *store)
 
 criteria_grade_t check_criteria(micrometer_data_t *store)
 {
+    // Zero readings case
+
+    if (store->data[0] == 0 && store->data[1] == 0 && store->data[2] == 0 && store->data[3] == 0)
+    {
+        store->grade = NONE_TRUE;
+        printf("GRADE: %d\n", store->grade);
+        return store->grade;
+    }
+
     // Assuming not zeroed at micrometer zero!!!!!
     // Parallelism -> |max - min| < PARALLELISM_TOLERANCE
     // Get Max, opposite since data<?> is unsigned
@@ -452,10 +462,10 @@ void app_main(void)
         check_criteria(&measurement_data);
         if (measurement_data.grade == NONE_TRUE)
             led_strip_set_colour(strip, NUM_LEDS, palette[RED]);
-        else if (measurement_data.grade == PARALELLISM_TRUE_ONLY)
-            led_strip_set_colour(strip, NUM_LEDS, palette[BLUE]);
         else if (measurement_data.grade == PROFILE_NOM_TRUE_ONLY)
-            led_strip_set_colour(strip, NUM_LEDS, palette[YELLOW]);
+            led_strip_set_colour(strip, NUM_LEDS, palette[RED]);
+        else if (measurement_data.grade == PARALELLISM_TRUE_ONLY)
+            led_strip_set_colour(strip, NUM_LEDS, palette[GREEN]);
         else if (measurement_data.grade == BOTH_TRUE)
             led_strip_set_colour(strip, NUM_LEDS, palette[GREEN]);
 
