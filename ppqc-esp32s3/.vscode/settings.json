@@ -34,6 +34,7 @@
         "string.h": "c",
         "sdmmc_cmd.h": "c",
         "led_strip_interface.h": "c",
-        "rmt_encoder.h": "c"
+        "rmt_encoder.h": "c",
+        "queue.h": "c"
     }
 }

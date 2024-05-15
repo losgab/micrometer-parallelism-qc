@@ -10,6 +10,9 @@
 
 #define SYS_DELAY(x) vTaskDelay(pdMS_TO_TICKS(x))
 
+#define SSID "C03941BH"
+#define PASSWORD "testwifi423!!!"
+
 // UART Stuff
 #define UART_PORT_NUM UART_NUM_2
 #define TX_PIN GPIO_NUM_5
