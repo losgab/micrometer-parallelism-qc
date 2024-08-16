@@ -1,0 +1,9 @@
+{
+    "files": [
+        "mainwindow.py",
+        "form.ui",
+        "ui_form.py",
+        "ParallelismChecker.py",
+        "ExtractData.py"
+    ]
+}

@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "easy_led_strip.h": "c",
+        "uart.h": "c",
+        "gpio.h": "c",
+        "gpio_types.h": "c",
+        "mux_thread.h": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "esp_idf_version.h": "c",
+        "freertos.h": "c"
+    }
+}

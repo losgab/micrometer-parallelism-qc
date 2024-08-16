@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "freertos.h": "c",
-        "esp_vfs_fat.h": "c",
-        "sdmmc_cmd.h": "c",
-        "sdmmc_types.h": "c"
-    }
-}
