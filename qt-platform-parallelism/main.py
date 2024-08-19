@@ -11,7 +11,7 @@ from PySide6.QtCore import Qt
 from ui_form import Ui_MainWindow
 from ExtractData import SerialPortGetter, DataGetter
 from ParallelismChecker import ParallelismChecker
-
+from qrcode import QR
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -27,6 +27,9 @@ class MainWindow(QMainWindow):
         self.serport_getter = self.serport_thread = None
         self.data_getter = self.data_thread = None
         self.init_serport_getter()
+
+        # Initialise QR scanner
+        self.qr_scanner = QR()
 
         self.initialise_comboboxes() # Device Selector
         self.init_parallelism_checker() # Start parallelism checking thread

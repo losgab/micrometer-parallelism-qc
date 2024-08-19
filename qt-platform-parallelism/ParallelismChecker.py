@@ -1,6 +1,6 @@
 # This Python file uses the following encoding: utf-8
 
-from PySide6.QtCore import QObject, Signal, QThread
+from PySide6.QtCore import QObject, Signal
 from numpy import array, cross, dot
 
 class ParallelismChecker(QObject):
@@ -55,7 +55,7 @@ class ParallelismChecker(QObject):
     def compute(self):
         self.clear_results.emit() # Reset
 
-        for index, value in self.current_data.items():
+        for _, value in self.current_data.items():
             if value == "--.---":
                 self.parallel_computed.emit("ERROR DATA")
                 self.flatness_computed.emit("ERROR DATA")

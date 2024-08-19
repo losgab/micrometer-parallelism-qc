@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 
 from PySide6.QtSerialPort import QSerialPortInfo, QSerialPort
-from PySide6.QtCore import QObject, Signal, QThread, QMutexLocker, QMutex, QIODevice
+from PySide6.QtCore import QObject, Signal, QMutex
 from time import sleep
 
 class SerialPortGetter(QObject):
