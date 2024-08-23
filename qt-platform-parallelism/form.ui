@@ -76,7 +76,7 @@
            </font>
           </property>
           <property name="text">
-           <string>CHOOSE: USB Enhanced Serial CH340</string>
+           <string>CHOOSE: USB Single Serial</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -490,11 +490,11 @@
             <widget class="QLabel" name="grade_data">
              <property name="font">
               <font>
-               <pointsize>15</pointsize>
+               <pointsize>30</pointsize>
               </font>
              </property>
              <property name="text">
-              <string>pass/fail</string>
+              <string>-</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -518,7 +518,7 @@
               </font>
              </property>
              <property name="text">
-              <string>float</string>
+              <string>-</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -529,20 +529,20 @@
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="flatness">
+         <widget class="QGroupBox" name="identifier">
           <property name="title">
-           <string>Flatness</string>
+           <string>Build Platform Identifier Code</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_6">
            <item row="0" column="0">
-            <widget class="QLabel" name="flatness_data">
+            <widget class="QLabel" name="identifier_data">
              <property name="font">
               <font>
                <pointsize>30</pointsize>
               </font>
              </property>
              <property name="text">
-              <string>float</string>
+              <string>-</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>

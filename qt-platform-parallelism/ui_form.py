@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'form.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.7.1
+## Created by: Qt User Interface Compiler version 6.7.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -251,7 +251,7 @@ class Ui_MainWindow(object):
         self.grade_data = QLabel(self.grade)
         self.grade_data.setObjectName(u"grade_data")
         font4 = QFont()
-        font4.setPointSize(15)
+        font4.setPointSize(30)
         self.grade_data.setFont(font4)
         self.grade_data.setAlignment(Qt.AlignCenter)
 
@@ -266,9 +266,7 @@ class Ui_MainWindow(object):
         self.gridLayout.setObjectName(u"gridLayout")
         self.parallelism_data = QLabel(self.parallelism)
         self.parallelism_data.setObjectName(u"parallelism_data")
-        font5 = QFont()
-        font5.setPointSize(30)
-        self.parallelism_data.setFont(font5)
+        self.parallelism_data.setFont(font4)
         self.parallelism_data.setAlignment(Qt.AlignCenter)
 
         self.gridLayout.addWidget(self.parallelism_data, 0, 0, 1, 1)
@@ -276,30 +274,30 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_3.addWidget(self.parallelism)
 
-        self.flatness = QGroupBox(self.centralwidget)
-        self.flatness.setObjectName(u"flatness")
-        self.gridLayout_6 = QGridLayout(self.flatness)
+        self.identifier = QGroupBox(self.centralwidget)
+        self.identifier.setObjectName(u"identifier")
+        self.gridLayout_6 = QGridLayout(self.identifier)
         self.gridLayout_6.setObjectName(u"gridLayout_6")
-        self.flatness_data = QLabel(self.flatness)
-        self.flatness_data.setObjectName(u"flatness_data")
-        self.flatness_data.setFont(font5)
-        self.flatness_data.setAlignment(Qt.AlignCenter)
+        self.identifier_data = QLabel(self.identifier)
+        self.identifier_data.setObjectName(u"identifier_data")
+        self.identifier_data.setFont(font4)
+        self.identifier_data.setAlignment(Qt.AlignCenter)
 
-        self.gridLayout_6.addWidget(self.flatness_data, 0, 0, 1, 1)
+        self.gridLayout_6.addWidget(self.identifier_data, 0, 0, 1, 1)
 
 
-        self.verticalLayout_3.addWidget(self.flatness)
+        self.verticalLayout_3.addWidget(self.identifier)
 
         self.horizontalLayout_6 = QHBoxLayout()
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
         self.button_clear = QPushButton(self.centralwidget)
         self.button_clear.setObjectName(u"button_clear")
         self.button_clear.setMinimumSize(QSize(100, 50))
-        font6 = QFont()
-        font6.setFamilies([u"Cascadia Code"])
-        font6.setPointSize(15)
-        font6.setBold(True)
-        self.button_clear.setFont(font6)
+        font5 = QFont()
+        font5.setFamilies([u"Cascadia Code"])
+        font5.setPointSize(15)
+        font5.setBold(True)
+        self.button_clear.setFont(font5)
 
         self.horizontalLayout_6.addWidget(self.button_clear)
 
@@ -307,7 +305,7 @@ class Ui_MainWindow(object):
         self.button_save.setObjectName(u"button_save")
         self.button_save.setMinimumSize(QSize(100, 50))
         self.button_save.setMaximumSize(QSize(16777215, 50))
-        self.button_save.setFont(font6)
+        self.button_save.setFont(font5)
         self.button_save.setAutoDefault(False)
 
         self.horizontalLayout_6.addWidget(self.button_save)
@@ -338,7 +336,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.label_23.setText("")
         self.label_22.setText(QCoreApplication.translate("MainWindow", u"Build Platform Parallelism Measurement Machine", None))
-        self.label_24.setText(QCoreApplication.translate("MainWindow", u"CHOOSE: USB Enhanced Serial CH340", None))
+        self.label_24.setText(QCoreApplication.translate("MainWindow", u"CHOOSE: USB Single Serial", None))
         self.data1.setText(QCoreApplication.translate("MainWindow", u"float", None))
         self.data2.setText(QCoreApplication.translate("MainWindow", u"float", None))
         self.data3.setText(QCoreApplication.translate("MainWindow", u"float", None))
@@ -351,11 +349,11 @@ class Ui_MainWindow(object):
         self.serialport_title1.setTitle(QCoreApplication.translate("MainWindow", u"Data Serial Port", None))
         self.button_test.setText(QCoreApplication.translate("MainWindow", u"TEST PLATFORM", None))
         self.grade.setTitle(QCoreApplication.translate("MainWindow", u"Grade", None))
-        self.grade_data.setText(QCoreApplication.translate("MainWindow", u"pass/fail", None))
+        self.grade_data.setText(QCoreApplication.translate("MainWindow", u"-", None))
         self.parallelism.setTitle(QCoreApplication.translate("MainWindow", u"Parallelism", None))
-        self.parallelism_data.setText(QCoreApplication.translate("MainWindow", u"float", None))
-        self.flatness.setTitle(QCoreApplication.translate("MainWindow", u"Flatness", None))
-        self.flatness_data.setText(QCoreApplication.translate("MainWindow", u"float", None))
+        self.parallelism_data.setText(QCoreApplication.translate("MainWindow", u"-", None))
+        self.identifier.setTitle(QCoreApplication.translate("MainWindow", u"Build Platform Identifier Code", None))
+        self.identifier_data.setText(QCoreApplication.translate("MainWindow", u"-", None))
         self.button_clear.setText(QCoreApplication.translate("MainWindow", u"CLEAR", None))
         self.button_save.setText(QCoreApplication.translate("MainWindow", u"SAVE RESULT", None))
     # retranslateUi

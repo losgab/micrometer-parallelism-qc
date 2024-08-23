@@ -21,21 +21,9 @@ class ParallelismChecker(QObject):
     finished = Signal()
 
     current_data = {}
-    # current_data = { # Dummy Data
-    #     "0": "1.509",
-    #     "1": "1.517",
-    #     "2": "1.666",
-    #     "3": "1.540",
-    #     "4": "1.575",
-    #     "5": "1.629",
-    #     "6": "1.684",
-    #     "7": "1.661",
-    #     "8": "1.509"
-    # }
 
     clear_results = Signal()
     parallel_computed = Signal(str)
-    flatness_computed = Signal(str)
     peak_points = Signal(list)
 
     def __init__(self, parent=None):
@@ -49,21 +37,13 @@ class ParallelismChecker(QObject):
                 continue
 
             number = value.replace('+', '')
-            # print(number)
             self.current_data[index] = float(number)
 
     def compute(self):
-        self.clear_results.emit() # Reset
+        # self.clear_results.emit() # Reset
 
-        for _, value in self.current_data.items():
-            if value == "--.---":
-                self.parallel_computed.emit("ERROR DATA")
-                self.flatness_computed.emit("ERROR DATA")
-                return
-
-        if len(self.current_data.items()) != 9:
-            self.parallel_computed.emit("No Data")
-            self.flatness_computed.emit("No Data")
+        if any(value == "--.---" for value in self.current_data.values()) or len(self.current_data.items()) != 9:
+            self.parallel_computed.emit("DATA ERROR")
             return
 
         sorted_dict_data = dict(sorted(self.current_data.items(), key=lambda item: item[1], reverse=True))
@@ -76,12 +56,10 @@ class ParallelismChecker(QObject):
         flatness_value = self.compute_flatness(sorted_dict_data, plane_coeff)
 
         points_list = list(points.items())
-        # print(points.items())
         print(f"P1: {points_list[0]} | P2: {points_list[1]} | P3: {points_list[2]}")
         print(f"CALCULATED EQUATION: {'-' if a < 0 else '+'}{abs(a):5} x {'-' if b < 0 else '+'}{abs(b):5} y {'-' if c < 0 else '+'}{abs(c):4} z {'-' if d < 0 else '+'}{abs(d):5} = 0 | PARALLELISM: {round(parallelism_value, 4):<20} | FLATNESS: {round(flatness_value, 3)}")
 
         self.parallel_computed.emit(str(round(parallelism_value, 3)))
-        self.flatness_computed.emit(str(round(flatness_value, 3)))
         self.peak_points.emit([k for k, v in points.items()])
 
     # Returns dict of points and associated z values

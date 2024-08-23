@@ -1,6 +1,6 @@
 {
     "files": [
-        "mainwindow.py",
+        "main.py",
         "form.ui",
         "ui_form.py",
         "ParallelismChecker.py",

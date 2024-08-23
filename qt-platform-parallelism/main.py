@@ -18,7 +18,7 @@ class MainWindow(QMainWindow):
         super().__init__(parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.showMaximized()
+        # self.showMaximized()
 
         # Connect click/open on combo box to starting getSerialPortsThread
         # Once done, serve the results from the thread onto the UI
@@ -30,6 +30,7 @@ class MainWindow(QMainWindow):
 
         # Initialise QR scanner
         self.qr_scanner = QR()
+        self.qr_scanner.qr_identifier.connect(self.show_identifier)
 
         self.initialise_comboboxes() # Device Selector
         self.init_parallelism_checker() # Start parallelism checking thread
@@ -44,13 +45,14 @@ class MainWindow(QMainWindow):
 
     def init_buttons(self):
         self.ui.button_test.clicked.connect(self.parallelism_checker.compute)
+        self.ui.button_test.clicked.connect(self.qr_scanner.get_qr_identifier)
         self.ui.button_clear.clicked.connect(self.clear_highlights)
 
     def compute_platform(self, data):
         if self.portCurrent == None:
             print("ERR: No Device Selected")
-            self.ui.grade_data.setText("ERROR: NO DATA")
-            self.ui.button_test.setText("ERROR: NO DATA")
+            self.ui.grade_data.setText("ERROR: Device not connected")
+            self.ui.button_test.setText("ERROR: Device not connected")
             return
         else:
             print("Something")
@@ -112,7 +114,6 @@ class MainWindow(QMainWindow):
 
         # Signals
         self.parallelism_checker.parallel_computed.connect(self.show_parallelism_value)
-        self.parallelism_checker.flatness_computed.connect(self.show_flatness_value)
         self.parallelism_checker.peak_points.connect(self.highlight_points)
         self.parallelism_checker.clear_results.connect(self.clear_highlights)
 
@@ -126,8 +127,9 @@ class MainWindow(QMainWindow):
     def show_parallelism_value(self, parallelism_value):
         self.ui.parallelism_data.setText(str(parallelism_value))
 
-    def show_flatness_value(self, flatness_value):
-        self.ui.flatness_data.setText(str(flatness_value))
+    def show_identifier(self, qr_code_text):
+        # print(qr_code_text)
+        self.ui.identifier_data.setText(str(qr_code_text))
 
     def highlight_points(self, points):
         for point in points:
@@ -152,8 +154,9 @@ class MainWindow(QMainWindow):
                     self.ui.data9.setStyleSheet("background: green")
 
     def clear_highlights(self):
-        self.ui.parallelism_data.setText("None")
-        self.ui.flatness_data.setText("None")
+        self.ui.parallelism_data.setText("")
+        self.ui.identifier_data.setText("")
+        self.ui.grade_data.setText("")
         self.ui.data1.setStyleSheet("")
         self.ui.data2.setStyleSheet("")
         self.ui.data3.setStyleSheet("")
