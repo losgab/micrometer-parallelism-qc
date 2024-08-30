@@ -68,7 +68,8 @@ class QRScanner(QObject):
     # Trigger scan and report back data
     def get_qr_identifier(self):
         if self.scanner is None:
-            self.find_scanner() # Retry connection
+            # self.find_scanner() # Retry connection # PROTOTYPE
+            return
 
         if self.qr_port_name is None:
             self.qr_identifier.emit("No Scanner Connected")
