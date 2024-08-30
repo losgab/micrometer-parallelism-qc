@@ -1,5 +1,5 @@
 from PySide6.QtSerialPort import QSerialPortInfo, QSerialPort
-from PySide6.QtCore import QObject, Signal, QMutex, QByteArray
+from PySide6.QtCore import QObject, Signal, QByteArray
 
 # Identification command
 
@@ -10,23 +10,23 @@ save_setting_command = QByteArray(bytearray([0x7E, 0x00, 0x09, 0x01, 0x00, 0x00,
 
 restore_defaults_command = QByteArray(bytearray([0x7E, 0x00, 0x09, 0x01, 0x00, 0x00, 0xFF, 0xAB, 0xCD]))
 
-class QR(QObject):
+class QRScanner(QObject):
     #Signals
     qr_identifier = Signal(str)
+    finished = Signal()
 
     # Get serial port connected to barcode scanner
     qr_port_name = None
     scanner = None
+    running = True
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
+    def find_scanner(self):
         # Target the right port
         ports = QSerialPortInfo.availablePorts()
         for port in ports:
             port_name = port.portName()
-
-            temp_port = QSerialPort()
+            print(port_name)
+            temp_port = QSerialPort(parent=self)
             temp_port.setPortName(port_name)
             temp_port.setBaudRate(QSerialPort.Baud9600, QSerialPort.AllDirections)
             temp_port.setDataBits(QSerialPort.Data8)
@@ -68,12 +68,19 @@ class QR(QObject):
     # Trigger scan and report back data
     def get_qr_identifier(self):
         if self.scanner is None:
+            self.find_scanner() # Retry connection
+
+        if self.qr_port_name is None:
             self.qr_identifier.emit("No Scanner Connected")
             return
 
+        # if self.qr_port_name is None:
+        #     self.qr_identifier.emit("No Scanner Connected")
+        #     return
+
         self.scanner.write(trigger_command)
 
-        if self.scanner.waitForReadyRead(100):  # Wait for up to 1000 ms
+        if self.scanner.waitForReadyRead(200):  # Wait for up to 1000 ms
             data = list(self.scanner.readAll().data())
             data = [hex(byte) for byte in data]
             if data != ['0x2', '0x0', '0x0', '0x1', '0x0', '0x33', '0x31']:
@@ -82,7 +89,10 @@ class QR(QObject):
                 return
         else:
             print("Timeout waiting for trigger confirmation, Closing port")
-            self.qr_identifier.emit("Scanner ERROR 0") # No response from scanner
+            self.scanner.close()
+            self.scanner = None
+            self.qr_port_name = None
+            self.qr_identifier.emit("No Scanner Connected") # No response from scanner
             return
 
         if self.scanner.waitForReadyRead(5000):  # Wait for up to 1000 ms
@@ -92,9 +102,14 @@ class QR(QObject):
             # print(f"QR Code Found: {ascii_string}")        
             self.qr_identifier.emit(ascii_string)
         else:
-            print("Timeout waiting for data, Closing port")
-            self.qr_identifier.emit("Scanner ERROR 0") # No response from scanner
+            print("Timeout waiting for data. No QR code found")
+            self.qr_identifier.emit("No QR code found") # No response from scanner
             return
         
+    def finish(self):
+        if self.scanner is not None:
+            self.scanner.close()
+        self.running = False
+        self.finished.emit()
 
 

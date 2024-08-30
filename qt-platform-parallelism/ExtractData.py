@@ -52,7 +52,6 @@ class DataGetter(QObject):
 
 
     def __init__(self, portName, waitTimeout, parent=None):
-        # locker = QMutexLocker(self.mutex)
         super().__init__(parent)
         self.portName = portName
         self.waitTimeout = waitTimeout

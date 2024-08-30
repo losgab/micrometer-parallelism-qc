@@ -11,7 +11,7 @@ from PySide6.QtCore import Qt
 from ui_form import Ui_MainWindow
 from ExtractData import SerialPortGetter, DataGetter
 from ParallelismChecker import ParallelismChecker
-from qrcode import QR
+from qr import QRScanner
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -28,14 +28,12 @@ class MainWindow(QMainWindow):
         # Initialise serial port refresher thread
         self.serport_getter = self.serport_thread = None
         self.data_getter = self.data_thread = None
+        self.qr_scanner = self.qr_scanner_thread = None
         self.init_serport_getter()
 
-        # Initialise QR scanner
-        self.qr_scanner = QR()
-        self.qr_scanner.qr_identifier.connect(self.show_identifier)
-
         self.initialise_comboboxes() # Device Selector
-        self.init_parallelism_checker() # Start parallelism checking thread
+        # self.init_parallelism_checker() # Start parallelism checking thread
+        self.init_qr_scanner()
         self.init_buttons() # Test & Save buttons
 
         # Terminate all threads
@@ -127,6 +125,28 @@ class MainWindow(QMainWindow):
         self.parallelism_checker.finished.connect(self.parallelism_checker.deleteLater) # When getter is finished, signal getter cleanup
         self.parallelism_thread.start()
 
+    # Initialise QR Scanner
+    def init_qr_scanner(self):
+        self.qr_scanner = QRScanner()
+        self.qr_scanner_thread = QThread()
+
+        self.qr_scanner.moveToThread(self.qr_scanner_thread)
+
+        # Start signal
+        self.qr_scanner_thread.started.connect(self.qr_scanner.find_scanner)
+
+        # Signals
+        self.qr_scanner.qr_identifier.connect(self.show_identifier)
+
+        # Termination Signals
+        self.qr_scanner.finished.connect(self.qr_scanner_thread.quit) # When getter is finished, tell thread to quit
+        self.qr_scanner.finished.connect(self.qr_scanner_thread.wait) # Wait for thread to finish quitting
+        self.qr_scanner_thread.finished.connect(self.qr_scanner_thread.deleteLater) # When thread is finished, signal thread cleanup
+        self.qr_scanner.finished.connect(self.qr_scanner.deleteLater) # When getter is finished, signal getter cleanup
+        self.qr_scanner_thread.start()
+
+        # self.qr_scanner.find_scanner()
+
     def grade_part(self):
         if self.data is None or any([value == None for value in self.data.values()]):
             self.ui.grade_data.setText("DATA ERROR")
@@ -136,7 +156,7 @@ class MainWindow(QMainWindow):
         float_data = [float(value) for value in self.data.values()]
         max_min = abs(max(float_data) - min(float_data))
 
-        self.ui.parallelism_data.setText(str(max_min))
+        self.ui.parallelism_data.setText(str(round(max_min, 3)))
 
         if (max_min <= 0.03):
             self.ui.grade_data.setText("PASS")
@@ -144,9 +164,13 @@ class MainWindow(QMainWindow):
         else:
             self.ui.grade_data.setText("FAIL")
             self.ui.grade.setStyleSheet("background: red")
-            
+        
+        max_index = max(float_data, key=float_data.get)
+        min_index = min(float_data, key=float_data.get)
+
+        self.highlight_points([max_index, min_index])
+
     def show_identifier(self, qr_code_text):
-        # print(qr_code_text)
         self.ui.identifier_data.setText(str(qr_code_text))
 
     def highlight_points(self, points):
@@ -192,8 +216,6 @@ class MainWindow(QMainWindow):
             if self.ui.serialport_select1.findText(str(port.description()), Qt.MatchContains) == -1:
                 self.ui.serialport_select1.addItem(f"[{port.portName()}] {port.description()}")
                 self.portgroup1 += 1
-                # self.ui.serialport_select2.addItem(f"[{port.portName()}] {port.description()}")
-                # self.portgroup2 += 1
 
     # SELECT SERIAL PORT
     def serialPort1Selected(self, portName):
@@ -264,8 +286,8 @@ class MainWindow(QMainWindow):
             self.serport_getter.finish()
         if self.data_thread is not None:
             self.data_getter.finish()
-        if self.parallelism_thread.isRunning(): # Thread for parallelism checker
-            self.parallelism_checker.finish()
+        if self.qr_scanner_thread.isRunning(): # Thread for parallelism checker
+            self.qr_scanner.finish()
         print("Threads Terminated")
 
 if __name__ == "__main__":
