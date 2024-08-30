@@ -95,7 +95,7 @@ class QRScanner(QObject):
             self.qr_identifier.emit("No Scanner Connected") # No response from scanner
             return
 
-        if self.scanner.waitForReadyRead(5000):  # Wait for up to 1000 ms
+        if self.scanner.waitForReadyRead(2000):  # Wait for up to 1000 ms
             data = list(self.scanner.readAll().data())
             data = [hex(byte) for byte in data]
             ascii_string = ''.join([chr(int(h, 16)) for h in data])

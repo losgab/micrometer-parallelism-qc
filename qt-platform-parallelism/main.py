@@ -166,8 +166,8 @@ class MainWindow(QMainWindow):
             self.ui.grade_data.setText("FAIL")
             self.ui.grade.setStyleSheet("background: red")
         
-        max_index = max(float_data, key=float_data.get)
-        min_index = min(float_data, key=float_data.get)
+        max_index = float_data.index(max(float_data))
+        min_index = float_data.index(min(float_data))
 
         self.highlight_points([max_index, min_index])
 
