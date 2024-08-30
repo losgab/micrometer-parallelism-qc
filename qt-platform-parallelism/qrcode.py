@@ -65,57 +65,36 @@ class QR(QObject):
         self.scanner.setStopBits(QSerialPort.OneStop)
         self.scanner.open(QSerialPort.ReadWrite)
 
-        # self.scanner.write(trigger_command)
-
-        # if self.scanner.waitForReadyRead(100):  # Wait for up to 1000 ms
-        #     data = list(self.scanner.readAll().data())
-        #     data = [hex(byte) for byte in data]
-        #     # Restore default acknowledge
-        #     assert(data == ['0x2', '0x0', '0x0', '0x1', '0x0', '0x33', '0x31'])
-        #     print("Trigger")
-        # else:
-        #     print("Timeout waiting for data, Closing port")
-        #     self.scanner.close()
-
-        # if self.scanner.waitForReadyRead(1000):  # Wait for up to 1000 ms
-        #     data = list(self.scanner.readAll().data())
-        #     data = [hex(byte) for byte in data]
-
-        #     ascii_string = ''.join([chr(int(h, 16)) for h in data])
-
-        #     # print(f"READ! {ascii_string}")
-        # else:
-        #     print("Timeout waiting for data, Closing port")
-        #     self.scanner.close()
-
-
     # Trigger scan and report back data
     def get_qr_identifier(self):
         if self.scanner is None:
             self.qr_identifier.emit("No Scanner Connected")
+            return
 
         self.scanner.write(trigger_command)
-
-        ascii_string = "No QR code found"
 
         if self.scanner.waitForReadyRead(100):  # Wait for up to 1000 ms
             data = list(self.scanner.readAll().data())
             data = [hex(byte) for byte in data]
-            # Restore default acknowledge
-            assert(data == ['0x2', '0x0', '0x0', '0x1', '0x0', '0x33', '0x31'])
+            if data != ['0x2', '0x0', '0x0', '0x1', '0x0', '0x33', '0x31']:
+                print("Trigger command not confirmed!")
+                self.qr_identifier.emit("Scanner ERROR 1")
+                return
         else:
-            print("Timeout waiting for data, Closing port")
+            print("Timeout waiting for trigger confirmation, Closing port")
+            self.qr_identifier.emit("Scanner ERROR 0") # No response from scanner
+            return
 
         if self.scanner.waitForReadyRead(5000):  # Wait for up to 1000 ms
             data = list(self.scanner.readAll().data())
             data = [hex(byte) for byte in data]
-
             ascii_string = ''.join([chr(int(h, 16)) for h in data])
-            print(f"QR Code Found: {ascii_string}")        
-
-            # print(f"READ! {ascii_string}")
+            # print(f"QR Code Found: {ascii_string}")        
+            self.qr_identifier.emit(ascii_string)
         else:
             print("Timeout waiting for data, Closing port")
+            self.qr_identifier.emit("Scanner ERROR 0") # No response from scanner
+            return
+        
 
-        self.qr_identifier.emit(ascii_string)
 

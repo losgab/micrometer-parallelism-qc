@@ -34,7 +34,6 @@ class DataGetter(QObject):
 
     mux_ports_in_use = [1, 2, 4, 5, 6, 9, 10, 12, 13]
 
-    # data = [0, 0, 0, 0, 0, 0, 0, 0, 0]
     data = {
         "0": "--.---",
         "1": "--.---",
@@ -64,12 +63,10 @@ class DataGetter(QObject):
 
         self.port.setPortName(self.portName)
         self.port.setBaudRate(QSerialPort.Baud115200, QSerialPort.AllDirections)
-        # self.port.setBaudRate(QSerialPort.Baud9600, QSerialPort.AllDirections)
         self.port.setDataBits(QSerialPort.Data8)
         self.port.setParity(QSerialPort.NoParity)
         self.port.setStopBits(QSerialPort.OneStop)
         self.port.open(QSerialPort.ReadWrite)
-        # print(self.port.open(QSerialPort.ReadWrite))
 
     # Main function for getting data from serial port
     def getData(self):
@@ -125,7 +122,6 @@ class DataGetter(QObject):
 
             # print(received_data)
 
-            # micrometer_data = str(received_data[1])
             for char in ('M', '[', ']', ':'):
                 received_data[0] = received_data[0].replace(char, '')
 
@@ -162,7 +158,6 @@ class DataGetter(QObject):
                 case 13:
                     self.data['8'] = received_data[1]
                     self.dataOut.emit(self.data)
-
 
     def finish(self):
         self.port.close()

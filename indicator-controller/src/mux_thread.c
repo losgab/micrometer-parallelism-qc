@@ -6,7 +6,7 @@
 
 #define RESPONSE_TIMEOUT 50
 
-#define DELAY 2000
+#define DELAY 500
 
 // Micrometer Query Command
 const uint8_t query[] = {0x01, 0x03, 0x00, 0x00, 0x00, 0x02, 0xC4, 0x0B}; // Micrometer Specific Query Instruction
@@ -139,13 +139,6 @@ void dial_mux_main(void *pvParameter)
                     led_strip_set_pixel_colour(strip, i, RED);
                 }
             }
-            // message_to_send.dial_ind = mux_dial_start + i;
-            // message_to_send.flag = (flags >> i) & 1;
-            // message_to_send.data = data;
-            // if (uxQueueSpacesAvailable(params->queue_handle) > 0)
-            // {
-            //     xQueueSendToBack(params->queue_handle, &message_to_send, 10);
-            // }
 
             received = false;
             data = 0;

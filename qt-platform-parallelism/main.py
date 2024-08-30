@@ -23,6 +23,8 @@ class MainWindow(QMainWindow):
         # Connect click/open on combo box to starting getSerialPortsThread
         # Once done, serve the results from the thread onto the UI
 
+        self.data = None
+
         # Initialise serial port refresher thread
         self.serport_getter = self.serport_thread = None
         self.data_getter = self.data_thread = None
@@ -44,7 +46,8 @@ class MainWindow(QMainWindow):
         self.portCurrent = None
 
     def init_buttons(self):
-        self.ui.button_test.clicked.connect(self.parallelism_checker.compute)
+        # self.ui.button_test.clicked.connect(self.parallelism_checker.compute)
+        self.ui.button_test.clicked.connect(self.grade_part)
         self.ui.button_test.clicked.connect(self.qr_scanner.get_qr_identifier)
         self.ui.button_clear.clicked.connect(self.clear_highlights)
 
@@ -113,7 +116,7 @@ class MainWindow(QMainWindow):
         self.parallelism_checker.moveToThread(self.parallelism_thread)
 
         # Signals
-        self.parallelism_checker.parallel_computed.connect(self.show_parallelism_value)
+        # self.parallelism_checker.parallel_computed.connect(self.show_parallelism_value)
         self.parallelism_checker.peak_points.connect(self.highlight_points)
         self.parallelism_checker.clear_results.connect(self.clear_highlights)
 
@@ -124,9 +127,24 @@ class MainWindow(QMainWindow):
         self.parallelism_checker.finished.connect(self.parallelism_checker.deleteLater) # When getter is finished, signal getter cleanup
         self.parallelism_thread.start()
 
-    def show_parallelism_value(self, parallelism_value):
-        self.ui.parallelism_data.setText(str(parallelism_value))
+    def grade_part(self):
+        if self.data is None or any([value == None for value in self.data.values()]):
+            self.ui.grade_data.setText("DATA ERROR")
+            self.ui.parallelism_data.setText("DATA ERROR")
+            return
 
+        float_data = [float(value) for value in self.data.values()]
+        max_min = abs(max(float_data) - min(float_data))
+
+        self.ui.parallelism_data.setText(str(max_min))
+
+        if (max_min <= 0.03):
+            self.ui.grade_data.setText("PASS")
+            self.ui.grade.setStyleSheet("background: green")
+        else:
+            self.ui.grade_data.setText("FAIL")
+            self.ui.grade.setStyleSheet("background: red")
+            
     def show_identifier(self, qr_code_text):
         # print(qr_code_text)
         self.ui.identifier_data.setText(str(qr_code_text))
@@ -166,6 +184,7 @@ class MainWindow(QMainWindow):
         self.ui.data7.setStyleSheet("")
         self.ui.data8.setStyleSheet("")
         self.ui.data9.setStyleSheet("")
+        self.ui.grade.setStyleSheet("")
 
     # SHOW SERIAL PORTS
     def serveSerialPorts(self, data):
@@ -202,7 +221,6 @@ class MainWindow(QMainWindow):
 
         # Gets the currently selected port
 
-        # new_port = str(self.ui.serialport_select1.currentText())
         if self.portCurrent != portName:
             print(f"New Port: {self.portCurrent} -> {portName}")
 
@@ -215,8 +233,10 @@ class MainWindow(QMainWindow):
 
     # Display received values
     def display_values(self, data):
-        # print(data)
         assert(type(data) is dict)
+
+        self.data = data
+
         for i in data.keys():
             match int(i):
                 case 0: #
@@ -238,6 +258,7 @@ class MainWindow(QMainWindow):
                 case 8:
                     self.ui.data9.setText(data[i])
 
+        
     def terminate_threads(self):
         if self.serport_thread.isRunning():
             self.serport_getter.finish()
