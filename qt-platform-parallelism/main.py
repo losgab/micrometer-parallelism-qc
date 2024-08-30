@@ -133,7 +133,7 @@ class MainWindow(QMainWindow):
         self.qr_scanner.moveToThread(self.qr_scanner_thread)
 
         # Start signal
-        self.qr_scanner_thread.started.connect(self.qr_scanner.find_scanner)
+        # self.qr_scanner_thread.started.connect(self.qr_scanner.find_scanner)
 
         # Signals
         self.qr_scanner.qr_identifier.connect(self.show_identifier)
@@ -148,6 +148,7 @@ class MainWindow(QMainWindow):
         # self.qr_scanner.find_scanner()
 
     def grade_part(self):
+        self.ui.identifier_data.setText("Scanning")
         if self.data is None or any([value == None for value in self.data.values()]):
             self.ui.grade_data.setText("DATA ERROR")
             self.ui.parallelism_data.setText("DATA ERROR")
