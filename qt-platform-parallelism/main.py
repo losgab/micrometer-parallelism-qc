@@ -149,7 +149,7 @@ class MainWindow(QMainWindow):
 
     def grade_part(self):
         self.ui.identifier_data.setText("Scanning")
-        if self.data is None or any([value == None for value in self.data.values()]):
+        if self.data is None or any([value == None for value in self.data.values()]) or any(value == "--.---" for value in self.current_data.values()):
             self.ui.grade_data.setText("DATA ERROR")
             self.ui.parallelism_data.setText("DATA ERROR")
             return
