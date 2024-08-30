@@ -97,7 +97,7 @@ class MainWindow(QMainWindow):
 
         # Process data received signal
         self.data_getter.dataOut.connect(self.display_values)
-        self.data_getter.dataOut.connect(self.parallelism_checker.receive)
+        # self.data_getter.dataOut.connect(self.parallelism_checker.receive)
 
         # Termination Signals
         self.data_getter.finished.connect(self.data_thread.quit) # When getter is finished, tell thread to quit
