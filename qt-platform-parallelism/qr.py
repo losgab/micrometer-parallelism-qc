@@ -1,5 +1,6 @@
 from PySide6.QtSerialPort import QSerialPortInfo, QSerialPort
-from PySide6.QtCore import QObject, Signal, QByteArray
+from PySide6.QtCore import QObject, Signal, QByteArray, QTimer
+from time import sleep
 
 # Identification command
 
@@ -20,14 +21,24 @@ class QRScanner(QObject):
     scanner = None
     running = True
 
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.find_scanner()
+
+    def scanner_connect(self):
+        self.scanner.close()
+        self.scanner = self.qr_port_name = None
+        self.find_scanner()        
+
     def find_scanner(self):
         # Target the right port
+        if self.scanner != None:
+            self.scanner.close()
+
         ports = QSerialPortInfo.availablePorts()
         for port in ports:
-            port_name = port.portName()
-            print(port_name)
-            temp_port = QSerialPort(parent=self)
-            temp_port.setPortName(port_name)
+            temp_port = QSerialPort()
+            temp_port.setPortName(port.portName())
             temp_port.setBaudRate(QSerialPort.Baud9600, QSerialPort.AllDirections)
             temp_port.setDataBits(QSerialPort.Data8)
             temp_port.setParity(QSerialPort.NoParity)
@@ -43,15 +54,16 @@ class QRScanner(QObject):
                 if self.is_scanner(data):
                     temp_port.close()
                     print("Scanner Found!")
-                    self.qr_port_name = port_name
+                    self.qr_port_name = port.portName()
                     self.configure_scanner()
-                    return
+                    return True
             else:
                 print("Timeout waiting for data")
 
             temp_port.close()
 
         print("Scanner not found")
+        return False
 
     def is_scanner(self, data) -> bool:
         return data == ['0x2', '0x0', '0x0', '0x1', '0x2', '0x13', '0x73']
@@ -66,18 +78,13 @@ class QRScanner(QObject):
         self.scanner.open(QSerialPort.ReadWrite)
 
     # Trigger scan and report back data
-    def get_qr_identifier(self):
+    def read_qr(self):
         if self.scanner is None:
-            # self.find_scanner() # Retry connection # PROTOTYPE
-            return
+            self.find_scanner() # Retry connection # PROTOTYPE
 
         if self.qr_port_name is None:
             self.qr_identifier.emit("No Scanner Connected")
             return
-
-        # if self.qr_port_name is None:
-        #     self.qr_identifier.emit("No Scanner Connected")
-        #     return
 
         self.scanner.write(trigger_command)
 
@@ -89,7 +96,7 @@ class QRScanner(QObject):
                 self.qr_identifier.emit("Scanner ERROR 1")
                 return
         else:
-            print("Timeout waiting for trigger confirmation, Closing port")
+            print("Timeout waiting for trigger confirmation, closing port. No scanner connected.")
             self.scanner.close()
             self.scanner = None
             self.qr_port_name = None
@@ -107,7 +114,8 @@ class QRScanner(QObject):
             self.qr_identifier.emit("No QR code found") # No response from scanner
             return
         
-    def finish(self):
+    def finish_all(self):
+        # self.timer.stop()
         if self.scanner is not None:
             self.scanner.close()
         self.running = False

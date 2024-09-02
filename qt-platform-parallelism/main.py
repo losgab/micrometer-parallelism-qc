@@ -1,5 +1,7 @@
 # This Python file uses the following encoding: utf-8
 import sys
+import pandas as pd
+import os
 
 from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtCore import QThread
@@ -13,6 +15,8 @@ from ExtractData import SerialPortGetter, DataGetter
 from ParallelismChecker import ParallelismChecker
 from qr import QRScanner
 
+DATA_FILE = "data.csv"
+
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -23,7 +27,7 @@ class MainWindow(QMainWindow):
         # Connect click/open on combo box to starting getSerialPortsThread
         # Once done, serve the results from the thread onto the UI
 
-        self.data = None
+        self.data = {}
 
         # Initialise serial port refresher thread
         self.serport_getter = self.serport_thread = None
@@ -46,8 +50,9 @@ class MainWindow(QMainWindow):
     def init_buttons(self):
         # self.ui.button_test.clicked.connect(self.parallelism_checker.compute)
         self.ui.button_test.clicked.connect(self.grade_part)
-        self.ui.button_test.clicked.connect(self.qr_scanner.get_qr_identifier)
+        # self.ui.button_test.clicked.connect(self.qr_scanner.get_qr_identifier)
         self.ui.button_clear.clicked.connect(self.clear_highlights)
+        self.ui.button_save.clicked.connect(self.save_data)
 
     def compute_platform(self, data):
         if self.portCurrent == None:
@@ -106,24 +111,24 @@ class MainWindow(QMainWindow):
         self.data_getter.finished.connect(self.data_getter.deleteLater) # When getter is finished, signal getter cleanup
         self.data_thread.start()
 
-    # Initialising parallelism checker from data
-    def init_parallelism_checker(self):
-        self.parallelism_checker = ParallelismChecker() # Compute Thread
-        self.parallelism_thread = QThread() # Port Getter Thread
+    # # Initialising parallelism checker from data
+    # def init_parallelism_checker(self):
+    #     self.parallelism_checker = ParallelismChecker() # Compute Thread
+    #     self.parallelism_thread = QThread() # Port Getter Thread
 
-        self.parallelism_checker.moveToThread(self.parallelism_thread)
+    #     self.parallelism_checker.moveToThread(self.parallelism_thread)
 
-        # Signals
-        # self.parallelism_checker.parallel_computed.connect(self.show_parallelism_value)
-        self.parallelism_checker.peak_points.connect(self.highlight_points)
-        self.parallelism_checker.clear_results.connect(self.clear_highlights)
+    #     # Signals
+    #     # self.parallelism_checker.parallel_computed.connect(self.show_parallelism_value)
+    #     self.parallelism_checker.peak_points.connect(self.highlight_points)
+    #     self.parallelism_checker.clear_results.connect(self.clear_highlights)
 
-        # # Termination Signals
-        self.parallelism_checker.finished.connect(self.parallelism_thread.quit) # When getter is finished, tell thread to quit
-        self.parallelism_checker.finished.connect(self.parallelism_thread.wait) # Wait for thread to finish quitting
-        self.parallelism_thread.finished.connect(self.parallelism_thread.deleteLater) # When thread is finished, signal thread cleanup
-        self.parallelism_checker.finished.connect(self.parallelism_checker.deleteLater) # When getter is finished, signal getter cleanup
-        self.parallelism_thread.start()
+    #     # # Termination Signals
+    #     self.parallelism_checker.finished.connect(self.parallelism_thread.quit) # When getter is finished, tell thread to quit
+    #     self.parallelism_checker.finished.connect(self.parallelism_thread.wait) # Wait for thread to finish quitting
+    #     self.parallelism_thread.finished.connect(self.parallelism_thread.deleteLater) # When thread is finished, signal thread cleanup
+    #     self.parallelism_checker.finished.connect(self.parallelism_checker.deleteLater) # When getter is finished, signal getter cleanup
+    #     self.parallelism_thread.start()
 
     # Initialise QR Scanner
     def init_qr_scanner(self):
@@ -133,7 +138,7 @@ class MainWindow(QMainWindow):
         self.qr_scanner.moveToThread(self.qr_scanner_thread)
 
         # Start signal
-        # self.qr_scanner_thread.started.connect(self.qr_scanner.find_scanner)
+        # self.qr_scanner_thread.started.connect(self.qr_scanner.scanner_connect)
 
         # Signals
         self.qr_scanner.qr_identifier.connect(self.show_identifier)
@@ -145,19 +150,27 @@ class MainWindow(QMainWindow):
         self.qr_scanner.finished.connect(self.qr_scanner.deleteLater) # When getter is finished, signal getter cleanup
         self.qr_scanner_thread.start()
 
-        # self.qr_scanner.find_scanner()
-
     def grade_part(self):
-        self.ui.identifier_data.setText("Scanning")
-        if self.data is None or any([value == None for value in self.data.values()]) or any(value == "--.---" for value in self.current_data.values()):
+        # if self.qr_scanner.find_scanner():
+        #     self.ui.identifier_data.setText("Scanning")
+        #     self.qr_scanner.read_qr()
+        # else:
+        #     self.ui.identifier_data.setText("No Scanner Found")
+            
+        self.qr_scanner.read_qr()
+    
+        if not self.data or any([value == None or value == "--.---" for value in self.data.values()]):
             self.ui.grade_data.setText("DATA ERROR")
             self.ui.parallelism_data.setText("DATA ERROR")
+            self.parallelism_value = None
             return
 
         float_data = [float(value) for value in self.data.values()]
         max_min = abs(max(float_data) - min(float_data))
 
-        self.ui.parallelism_data.setText(str(round(max_min, 3)))
+        self.parallelism_value = str(round(max_min, 3))
+
+        self.ui.parallelism_data.setText(self.parallelism_value)
 
         if (max_min <= 0.03):
             self.ui.grade_data.setText("PASS")
@@ -221,7 +234,7 @@ class MainWindow(QMainWindow):
     # SELECT SERIAL PORT
     def serialPort1Selected(self, portName):
         if portName == "No Device Selected":
-            print("No port selected")
+            # print("No port selected")
             self.ui.data1.setText("No Data")
             self.ui.data2.setText("No Data")
             self.ui.data3.setText("No Data")
@@ -281,6 +294,23 @@ class MainWindow(QMainWindow):
                 case 8:
                     self.ui.data9.setText(data[i])
 
+    def save_data(self):
+        file_exists = os.path.isfile(DATA_FILE)
+        if file_exists:
+            file = pd.read_csv(DATA_FILE)
+            if len(file) != 0:
+                last_row = file.tail(1)
+                print(last_row)
+                last_row_list = last_row.values.tolist()[0]
+                index = int(last_row_list[0]) + 1
+            else:
+                index = 0
+            new_row = pd.DataFrame([{'Index': f'{index}', 'ParallelismVal': '0', 'Grade': 'FAIL', 'PlatformID': '0'}])
+            file = pd.concat([file, new_row], ignore_index=True)
+            file.to_csv(DATA_FILE, index=False)
+        else:
+            print("File does not exist")
+
         
     def terminate_threads(self):
         if self.serport_thread.isRunning():
@@ -288,7 +318,7 @@ class MainWindow(QMainWindow):
         if self.data_thread is not None:
             self.data_getter.finish()
         if self.qr_scanner_thread.isRunning(): # Thread for parallelism checker
-            self.qr_scanner.finish()
+            self.qr_scanner.finish_all()
         print("Threads Terminated")
 
 if __name__ == "__main__":
