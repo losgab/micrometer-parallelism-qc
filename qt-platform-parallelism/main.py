@@ -40,6 +40,8 @@ class MainWindow(QMainWindow):
         self.init_qr_scanner()
         self.init_buttons() # Test & Save buttons
 
+        self.parallelism_value = self.identifier = None
+
         # Terminate all threads
         app.aboutToQuit.connect(self.terminate_threads)
 
@@ -186,6 +188,7 @@ class MainWindow(QMainWindow):
 
     def show_identifier(self, qr_code_text):
         self.ui.identifier_data.setText(str(qr_code_text))
+        self.identifier = qr_code_text
 
     def highlight_points(self, points):
         for point in points:
@@ -295,6 +298,14 @@ class MainWindow(QMainWindow):
                     self.ui.data9.setText(data[i])
 
     def save_data(self):
+        if self.parallelism_value == None:
+            self.ui.parallelism_data.setText("No Parallelism Data")
+            return
+
+        if self.identifier == None:
+            self.ui.identifier_data.setText("No Identifier Data")
+            return
+
         file_exists = os.path.isfile(DATA_FILE)
         if file_exists:
             file = pd.read_csv(DATA_FILE)
@@ -305,7 +316,10 @@ class MainWindow(QMainWindow):
                 index = int(last_row_list[0]) + 1
             else:
                 index = 0
-            new_row = pd.DataFrame([{'Index': f'{index}', 'ParallelismVal': '0', 'Grade': 'FAIL', 'PlatformID': '0'}])
+            self.qr_scanner.read_qr()
+
+
+            new_row = pd.DataFrame([{'Index': f'{index}', 'ParallelismVal': f'{self.parallelism_value}', 'Grade': f"{'PASS' if float(self.parallelism_value) < 0.03 else 'FAIL'}", 'PlatformID': f'{self.identifier}'}])
             file = pd.concat([file, new_row], ignore_index=True)
             file.to_csv(DATA_FILE, index=False)
         else:
