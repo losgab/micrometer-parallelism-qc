@@ -117,13 +117,14 @@ class MainWindow(QMainWindow):
 
         self.qr_scanner.moveToThread(self.qr_scanner_thread)
 
-        self.get_qr_id.connect(self.qr_scanner.read_qr)
 
         # Start signal
         # self.qr_scanner_thread.started.connect(self.qr_scanner.scanner_connect)
 
         # Signals
+        self.get_qr_id.connect(self.qr_scanner.read_qr)
         self.qr_scanner.qr_identifier.connect(self.show_identifier)
+        self.ui.button_connect_scanner.clicked.connect(self.qr_scanner.find_scanner)
 
         # Termination Signals
         self.qr_scanner.finished.connect(self.qr_scanner_thread.quit) # When getter is finished, tell thread to quit

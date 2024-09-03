@@ -293,6 +293,7 @@ class Ui_MainWindow(object):
         self.button_clear = QPushButton(self.centralwidget)
         self.button_clear.setObjectName(u"button_clear")
         self.button_clear.setMinimumSize(QSize(100, 50))
+        self.button_clear.setMaximumSize(QSize(16777215, 50))
         font5 = QFont()
         font5.setFamilies([u"Cascadia Code"])
         font5.setPointSize(15)
@@ -300,6 +301,15 @@ class Ui_MainWindow(object):
         self.button_clear.setFont(font5)
 
         self.horizontalLayout_6.addWidget(self.button_clear)
+
+        self.button_connect_scanner = QPushButton(self.centralwidget)
+        self.button_connect_scanner.setObjectName(u"button_connect_scanner")
+        self.button_connect_scanner.setMinimumSize(QSize(100, 50))
+        self.button_connect_scanner.setMaximumSize(QSize(250, 50))
+        self.button_connect_scanner.setFont(font5)
+        self.button_connect_scanner.setAutoDefault(False)
+
+        self.horizontalLayout_6.addWidget(self.button_connect_scanner)
 
         self.button_save = QPushButton(self.centralwidget)
         self.button_save.setObjectName(u"button_save")
@@ -350,11 +360,12 @@ class Ui_MainWindow(object):
         self.button_test.setText(QCoreApplication.translate("MainWindow", u"TEST PLATFORM", None))
         self.grade.setTitle(QCoreApplication.translate("MainWindow", u"Grade", None))
         self.grade_data.setText(QCoreApplication.translate("MainWindow", u"-", None))
-        self.parallelism.setTitle(QCoreApplication.translate("MainWindow", u"Parallelism", None))
+        self.parallelism.setTitle(QCoreApplication.translate("MainWindow", u"Parallelism (<= 30 micron for pass)", None))
         self.parallelism_data.setText(QCoreApplication.translate("MainWindow", u"-", None))
         self.identifier.setTitle(QCoreApplication.translate("MainWindow", u"Build Platform Identifier Code", None))
         self.identifier_data.setText(QCoreApplication.translate("MainWindow", u"-", None))
         self.button_clear.setText(QCoreApplication.translate("MainWindow", u"CLEAR", None))
+        self.button_connect_scanner.setText(QCoreApplication.translate("MainWindow", u"CONNECT SCANNER", None))
         self.button_save.setText(QCoreApplication.translate("MainWindow", u"SAVE RESULT", None))
     # retranslateUi
 

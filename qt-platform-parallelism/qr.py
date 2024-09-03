@@ -63,6 +63,7 @@ class QRScanner(QObject):
             temp_port.close()
 
         print("Scanner not found")
+        self.qr_identifier.emit("No Scanner Connected")
         return False
 
     def is_scanner(self, data) -> bool:
@@ -79,10 +80,7 @@ class QRScanner(QObject):
 
     # Trigger scan and report back data
     def read_qr(self):
-        if self.scanner is None:
-            self.find_scanner() # Retry connection # PROTOTYPE
-
-        if self.qr_port_name is None:
+        if self.scanner is None or self.qr_port_name is None:
             self.qr_identifier.emit("No Scanner Connected")
             return
 
