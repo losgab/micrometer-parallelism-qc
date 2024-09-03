@@ -36,6 +36,7 @@ class QRScanner(QObject):
             self.scanner.close()
 
         ports = QSerialPortInfo.availablePorts()
+        print(f"Num available ports: {len(ports)}")
         for port in ports:
             temp_port = QSerialPort()
             temp_port.setPortName(port.portName())

@@ -35,7 +35,9 @@ class MainWindow(QMainWindow):
         self.qr_scanner = self.qr_scanner_thread = None
         self.init_serport_getter()
 
-        self.initialise_comboboxes() # Device Selector
+        self.ui.serialport_select1.addItem("No Device Selected")
+        self.portgroup1 = 1
+        self.ui.serialport_select1.currentTextChanged.connect(self.serialPort1Selected)
         # self.init_parallelism_checker() # Start parallelism checking thread
         self.init_qr_scanner()
         self.init_buttons() # Test & Save buttons
@@ -46,13 +48,10 @@ class MainWindow(QMainWindow):
         app.aboutToQuit.connect(self.terminate_threads)
 
         # Thread for receiving data from serial port
-        self.port1_response = ""
         self.portCurrent = None
 
     def init_buttons(self):
-        # self.ui.button_test.clicked.connect(self.parallelism_checker.compute)
         self.ui.button_test.clicked.connect(self.grade_part)
-        # self.ui.button_test.clicked.connect(self.qr_scanner.get_qr_identifier)
         self.ui.button_clear.clicked.connect(self.clear_highlights)
         self.ui.button_save.clicked.connect(self.save_data)
 
@@ -67,12 +66,6 @@ class MainWindow(QMainWindow):
         # if not self.data_getter.isRunning():
         #     print("No data input from serial port!")
         # print(self.receiver_thread.isRunning())
-
-    # INITIALISE COMBO BOXES
-    def initialise_comboboxes(self):
-        self.ui.serialport_select1.addItem("No Device Selected")
-        self.portgroup1 = 1
-        self.ui.serialport_select1.currentTextChanged.connect(self.serialPort1Selected)
 
     # Initialise getting SERIAL PORTS
     def init_serport_getter(self):
@@ -113,25 +106,6 @@ class MainWindow(QMainWindow):
         self.data_getter.finished.connect(self.data_getter.deleteLater) # When getter is finished, signal getter cleanup
         self.data_thread.start()
 
-    # # Initialising parallelism checker from data
-    # def init_parallelism_checker(self):
-    #     self.parallelism_checker = ParallelismChecker() # Compute Thread
-    #     self.parallelism_thread = QThread() # Port Getter Thread
-
-    #     self.parallelism_checker.moveToThread(self.parallelism_thread)
-
-    #     # Signals
-    #     # self.parallelism_checker.parallel_computed.connect(self.show_parallelism_value)
-    #     self.parallelism_checker.peak_points.connect(self.highlight_points)
-    #     self.parallelism_checker.clear_results.connect(self.clear_highlights)
-
-    #     # # Termination Signals
-    #     self.parallelism_checker.finished.connect(self.parallelism_thread.quit) # When getter is finished, tell thread to quit
-    #     self.parallelism_checker.finished.connect(self.parallelism_thread.wait) # Wait for thread to finish quitting
-    #     self.parallelism_thread.finished.connect(self.parallelism_thread.deleteLater) # When thread is finished, signal thread cleanup
-    #     self.parallelism_checker.finished.connect(self.parallelism_checker.deleteLater) # When getter is finished, signal getter cleanup
-    #     self.parallelism_thread.start()
-
     # Initialise QR Scanner
     def init_qr_scanner(self):
         self.qr_scanner = QRScanner()
@@ -153,12 +127,6 @@ class MainWindow(QMainWindow):
         self.qr_scanner_thread.start()
 
     def grade_part(self):
-        # if self.qr_scanner.find_scanner():
-        #     self.ui.identifier_data.setText("Scanning")
-        #     self.qr_scanner.read_qr()
-        # else:
-        #     self.ui.identifier_data.setText("No Scanner Found")
-            
         self.qr_scanner.read_qr()
     
         if not self.data or any([value == None or value == "--.---" for value in self.data.values()]):
