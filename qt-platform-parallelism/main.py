@@ -12,7 +12,7 @@ from PySide6.QtCore import Qt
 #     pyside6-uic form.ui -o ui_form.py
 from ui_form import Ui_MainWindow
 from ExtractData import SerialPortGetter, DataGetter
-from ParallelismChecker import ParallelismChecker
+# from ParallelismChecker import ParallelismChecker
 from qr import QRScanner
 
 DATA_FILE = "data.csv"

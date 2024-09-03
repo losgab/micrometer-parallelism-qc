@@ -25,11 +25,6 @@ class QRScanner(QObject):
         super().__init__(parent)
         self.find_scanner()
 
-    def scanner_connect(self):
-        self.scanner.close()
-        self.scanner = self.qr_port_name = None
-        self.find_scanner()        
-
     def find_scanner(self):
         # Target the right port
         if self.scanner != None:
@@ -38,6 +33,7 @@ class QRScanner(QObject):
         ports = QSerialPortInfo.availablePorts()
         print(f"Num available ports: {len(ports)}")
         for port in ports:
+            print("Scanning port: {port.portName()}")
             temp_port = QSerialPort()
             temp_port.setPortName(port.portName())
             temp_port.setBaudRate(QSerialPort.Baud9600, QSerialPort.AllDirections)
@@ -45,6 +41,11 @@ class QRScanner(QObject):
             temp_port.setParity(QSerialPort.NoParity)
             temp_port.setStopBits(QSerialPort.OneStop)
             temp_port.open(QSerialPort.ReadWrite)
+
+            # Check if port has been opened
+            if not temp_port.isOpen():
+                print("Failed to open port")
+                continue
 
             temp_port.write(scanner_identify_command)
 
@@ -108,15 +109,12 @@ class QRScanner(QObject):
             data = list(self.scanner.readAll().data())
             data = [hex(byte) for byte in data]
             ascii_string = ''.join([chr(int(h, 16)) for h in data])
-            # print(f"QR Code Found: {ascii_string}")        
             self.qr_identifier.emit(ascii_string)
         else:
             print("Timeout waiting for data. No QR code found")
             self.qr_identifier.emit("No QR code found") # No response from scanner
-            return
         
     def finish_all(self):
-        # self.timer.stop()
         if self.scanner is not None:
             self.scanner.close()
         self.running = False
