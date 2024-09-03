@@ -19,7 +19,6 @@ class QRScanner(QObject):
     # Get serial port connected to barcode scanner
     qr_port_name = None
     scanner = None
-    running = True
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -31,9 +30,8 @@ class QRScanner(QObject):
             self.scanner.close()
 
         ports = QSerialPortInfo.availablePorts()
-        print(f"Num available ports: {len(ports)}")
         for port in ports:
-            print("Scanning port: {port.portName()}")
+            print(f"Scanning port: {port.portName()} (Total ports: {len(ports)})")
             temp_port = QSerialPort()
             temp_port.setPortName(port.portName())
             temp_port.setBaudRate(QSerialPort.Baud9600, QSerialPort.AllDirections)
@@ -60,7 +58,7 @@ class QRScanner(QObject):
                     self.configure_scanner()
                     return True
             else:
-                print("Timeout waiting for data")
+                print("Timeout waiting for data. Not scanner")
 
             temp_port.close()
 
@@ -117,7 +115,6 @@ class QRScanner(QObject):
     def finish_all(self):
         if self.scanner is not None:
             self.scanner.close()
-        self.running = False
         self.finished.emit()
 
 

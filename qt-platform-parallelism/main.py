@@ -4,7 +4,7 @@ import pandas as pd
 import os
 
 from PySide6.QtWidgets import QApplication, QMainWindow
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QThread, Signal
 from PySide6.QtCore import Qt
 
 # Important:
@@ -18,6 +18,8 @@ from qr import QRScanner
 DATA_FILE = "data.csv"
 
 class MainWindow(QMainWindow):
+    get_qr_id = Signal()
+    
     def __init__(self, parent=None):
         super().__init__(parent)
         self.ui = Ui_MainWindow()
@@ -39,10 +41,12 @@ class MainWindow(QMainWindow):
         self.portgroup1 = 1
         self.ui.serialport_select1.currentTextChanged.connect(self.serialPort1Selected)
         # self.init_parallelism_checker() # Start parallelism checking thread
+        
         self.init_qr_scanner()
         self.init_buttons() # Test & Save buttons
 
         self.parallelism_value = self.identifier = None
+        
 
         # Terminate all threads
         app.aboutToQuit.connect(self.terminate_threads)
@@ -113,6 +117,8 @@ class MainWindow(QMainWindow):
 
         self.qr_scanner.moveToThread(self.qr_scanner_thread)
 
+        self.get_qr_id.connect(self.qr_scanner.read_qr)
+
         # Start signal
         # self.qr_scanner_thread.started.connect(self.qr_scanner.scanner_connect)
 
@@ -127,7 +133,7 @@ class MainWindow(QMainWindow):
         self.qr_scanner_thread.start()
 
     def grade_part(self):
-        self.qr_scanner.read_qr()
+        self.get_qr_id.emit()
     
         if not self.data or any([value == None or value == "--.---" for value in self.data.values()]):
             self.ui.grade_data.setText("DATA ERROR")
