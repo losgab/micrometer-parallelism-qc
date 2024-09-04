@@ -67,6 +67,10 @@ class DataGetter(QObject):
         self.port.setStopBits(QSerialPort.OneStop)
         self.port.open(QSerialPort.ReadWrite)
 
+        if not self.port.isOpen():
+            print("Failed to open port")
+            
+
     # Main function for getting data from serial port
     def getData(self):
         pass
@@ -130,7 +134,7 @@ class DataGetter(QObject):
             index = int(received_data[0])
 
             match int(index):
-                case 1: #
+                case 1:
                     self.data['0'] = received_data[1]
                     self.dataOut.emit(self.data)
                 case 2:
