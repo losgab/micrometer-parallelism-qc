@@ -68,6 +68,7 @@ class DataGetter(QObject):
         self.port.open(QSerialPort.ReadWrite)
 
         if not self.port.isOpen():
+            self.port.close()
             print("Failed to open port")
             
 
