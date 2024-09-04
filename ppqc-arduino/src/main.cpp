@@ -112,23 +112,24 @@ void setup()
 
 void loop()
 {
-	save_button.update_button();
-	if (save_button.was_pushed())
-	{
-		save_measurement();
-	}
+	// save_button.update_button();
+	// if (save_button.was_pushed())
+	// {
+	// 	save_measurement();
+	// }
 
 	update_micrometers();
-	grade = check_criteria();
-	if (grade == NONE_TRUE)
-		show_colour(red);
-	else if (grade == PARALELLISM_TRUE_ONLY)
-		show_colour(blue);
-	else if (grade == PROFILE_NOM_TRUE_ONLY)
-		show_colour(yellow);
-	else if (grade == BOTH_TRUE)
-		show_colour(green);
+	// grade = check_criteria();
+	// if (grade == NONE_TRUE)
+	// 	show_colour(red);
+	// else if (grade == PARALELLISM_TRUE_ONLY)
+	// 	show_colour(blue);
+	// else if (grade == PROFILE_NOM_TRUE_ONLY)
+	// 	show_colour(yellow);
+	// else if (grade == BOTH_TRUE)
+	// 	show_colour(green);
 	serial_display_readings();
+	delay(100);
 }
 
 void update_micrometers()
@@ -147,47 +148,47 @@ void update_micrometers()
 	data1 = ((response[5] << 8) | response[6]);
 	data1 = data1 / 1000;
 
-	i = 0;
-	micrometer2.listen();
-	response[3] = response[5] = response[6] = 0;
-	micrometer2.write(query, sizeof(query));
-	delay(QUERY_WAIT);
-	while (micrometer2.available())
-	{
-		response[i] = micrometer2.read();
-		i++;
-	}
-	flag2 = response[3];
-	data2 = ((response[5] << 8) | response[6]);
-	data2 = data2 / 1000;
+	// i = 0;
+	// micrometer2.listen();
+	// response[3] = response[5] = response[6] = 0;
+	// micrometer2.write(query, sizeof(query));
+	// delay(QUERY_WAIT);
+	// while (micrometer2.available())
+	// {
+	// 	response[i] = micrometer2.read();
+	// 	i++;
+	// }
+	// flag2 = response[3];
+	// data2 = ((response[5] << 8) | response[6]);
+	// data2 = data2 / 1000;
 
-	i = 0;
-	micrometer3.listen();
-	response[3] = response[5] = response[6] = 0;
-	micrometer3.write(query, sizeof(query));
-	delay(QUERY_WAIT);
-	while (micrometer3.available())
-	{
-		response[i] = micrometer3.read();
-		i++;
-	}
-	flag3 = response[3];
-	data3 = ((response[5] << 8) | response[6]);
-	data3 = data3 / 1000;
+	// i = 0;
+	// micrometer3.listen();
+	// response[3] = response[5] = response[6] = 0;
+	// micrometer3.write(query, sizeof(query));
+	// delay(QUERY_WAIT);
+	// while (micrometer3.available())
+	// {
+	// 	response[i] = micrometer3.read();
+	// 	i++;
+	// }
+	// flag3 = response[3];
+	// data3 = ((response[5] << 8) | response[6]);
+	// data3 = data3 / 1000;
 
-	i = 0;
-	micrometer4.listen();
-	response[3] = response[5] = response[6] = 0;
-	micrometer4.write(query, sizeof(query));
-	delay(QUERY_WAIT);
-	while (micrometer4.available())
-	{
-		response[i] = micrometer4.read();
-		i++;
-	}
-	flag4 = response[3];
-	data4 = ((response[5] << 8) | response[6]);
-	data4 = data4 / 1000;
+	// i = 0;
+	// micrometer4.listen();
+	// response[3] = response[5] = response[6] = 0;
+	// micrometer4.write(query, sizeof(query));
+	// delay(QUERY_WAIT);
+	// while (micrometer4.available())
+	// {
+	// 	response[i] = micrometer4.read();
+	// 	i++;
+	// }
+	// flag4 = response[3];
+	// data4 = ((response[5] << 8) | response[6]);
+	// data4 = data4 / 1000;
 }
 
 void serial_display_readings()
@@ -196,15 +197,16 @@ void serial_display_readings()
 	Serial.print("M1: ");
 	Serial.print(flag1 ? "-" : "+");
 	Serial.print(data1, 3);
-	Serial.print(" | M2: ");
-	Serial.print(flag2 ? "-" : "+");
-	Serial.print(data2, 3);
-	Serial.print(" | M3: ");
-	Serial.print(flag3 ? "-" : "+");
-	Serial.print(data3, 3);
-	Serial.print(" | M4: ");
-	Serial.print(flag4 ? "-" : "+");
-	Serial.println(data4, 3);
+	Serial.println();
+	// Serial.print(" | M2: ");
+	// Serial.print(flag2 ? "-" : "+");
+	// Serial.print(data2, 3);
+	// Serial.print(" | M3: ");
+	// Serial.print(flag3 ? "-" : "+");
+	// Serial.print(data3, 3);
+	// Serial.print(" | M4: ");
+	// Serial.print(flag4 ? "-" : "+");
+	// Serial.println(data4, 3);
 }
 
 void oled_display_readings() // Not Enabled for memory constraints

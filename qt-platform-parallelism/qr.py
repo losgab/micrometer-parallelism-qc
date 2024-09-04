@@ -31,7 +31,11 @@ class QRScanner(QObject):
 
         ports = QSerialPortInfo.availablePorts()
         for port in ports:
-            print(f"Scanning port: {port.portName()} (Total ports: {len(ports)})")
+            if port.description() != "USB Serial Device" or port.description() == "USB Single Serial":
+                print(f"Skippedd port: {port.portName()} - {port.description()}")
+                continue
+
+            print(f"Scanning port: {port.portName()} - {port.description()} (Total ports: {len(ports)})")
             temp_port = QSerialPort()
             temp_port.setPortName(port.portName())
             temp_port.setBaudRate(QSerialPort.Baud9600, QSerialPort.AllDirections)
