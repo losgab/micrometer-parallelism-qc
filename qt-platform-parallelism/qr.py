@@ -43,6 +43,7 @@ class QRScanner(QObject):
             # Check if port has been opened
             if not temp_port.isOpen():
                 print("Failed to open port")
+                temp_port.close()
                 continue
 
             temp_port.write(scanner_identify_command)
