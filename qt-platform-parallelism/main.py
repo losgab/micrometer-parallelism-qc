@@ -120,16 +120,19 @@ class MainWindow(QMainWindow):
         self.qr_scanner_thread.start()
 
     def grade_part(self):
+        self.ui.button_test.setText("...")
         self.get_qr_id.emit()
 
         if self.ui.serialport_select1.currentText() == "No Device Selected":
             self.ui.grade_data.setText("No Device")
             self.ui.parallelism_data.setText("No Device")
+            self.ui.button_test.setText("TEST PLATFORM")
             return
     
         if not self.data or any([value == None or value == "--.---" for value in self.data.values()]):
             self.ui.grade_data.setText("DATA ERROR")
             self.ui.parallelism_data.setText("DATA ERROR")
+            self.ui.button_test.setText("TEST PLATFORM")
             self.parallelism_value = None
             return
 
@@ -151,6 +154,9 @@ class MainWindow(QMainWindow):
         max_index = float_data.index(max(float_data))
         min_index = float_data.index(min(float_data))
         self.highlight_points([max_index, min_index])
+
+        # Reset
+        self.ui.button_test.setText("TEST PLATFORM")
 
     def show_identifier(self, qr_code_text):
         self.ui.identifier_data.setText(str(qr_code_text))
@@ -282,7 +288,8 @@ class MainWindow(QMainWindow):
                 index = int(last_row_list[0]) + 1
             else:
                 index = 0
-            self.qr_scanner.read_qr()
+
+            self.get_qr_id.emit() # Get QR ID
 
 
             new_row = pd.DataFrame([{'Index': f'{index}', 'ParallelismVal': f'{self.parallelism_value}', 'Grade': f"{'PASS' if float(self.parallelism_value) < 0.03 else 'FAIL'}", 'PlatformID': f'{self.identifier}'}])

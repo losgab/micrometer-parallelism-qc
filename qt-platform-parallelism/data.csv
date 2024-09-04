@@ -1,10 +1,15 @@
 Index,ParallelismVal,Grade,PlatformID
-0,0,FAIL,0
-1,0,FAIL,0
-2,0,FAIL,0
-3,0,FAIL,0
-4,0,FAIL,0
-5,0,FAIL,0
-6,0,FAIL,0
-7,0,FAIL,0
-8,0,FAIL,0
+0,0.0,FAIL,0
+1,0.0,FAIL,0
+2,0.0,FAIL,0
+3,0.0,FAIL,0
+4,0.0,FAIL,0
+5,0.0,FAIL,0
+6,0.0,FAIL,0
+7,0.0,FAIL,0
+8,0.0,FAIL,0
+9,0.0,PASS,No Scanner Connected
+10,0.0,PASS,No QR code found
+11,0.0,PASS,No QR code found
+12,0.0,PASS,No Scanner Connected
+13,0.0,PASS,No QR code found

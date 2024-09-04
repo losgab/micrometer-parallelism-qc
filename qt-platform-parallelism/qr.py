@@ -87,6 +87,9 @@ class QRScanner(QObject):
     # Trigger scan and report back data
     def read_qr(self): # CONNECTED TO SIGNAL get_qr_id
         if self.scanner is None or self.qr_port_name is None:
+            self.find_scanner()
+
+        if self.scanner is None or self.qr_port_name is None:
             self.qr_identifier.emit("No Scanner Connected")
             return
 
