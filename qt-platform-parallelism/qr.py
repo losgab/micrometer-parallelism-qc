@@ -22,7 +22,7 @@ class QRScanner(QObject):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.find_scanner()
+        # self.find_scanner()
 
     def find_scanner(self):
         # Target the right port
@@ -79,8 +79,13 @@ class QRScanner(QObject):
         self.scanner.setStopBits(QSerialPort.OneStop)
         self.scanner.open(QSerialPort.ReadWrite)
 
+        if self.scanner.isOpen():
+            self.qr_identifier.emit("Scanner Connected")
+        else:
+            self.qr_identifier.emit("Scanner not connected")
+
     # Trigger scan and report back data
-    def read_qr(self):
+    def read_qr(self): # CONNECTED TO SIGNAL get_qr_id
         if self.scanner is None or self.qr_port_name is None:
             self.qr_identifier.emit("No Scanner Connected")
             return

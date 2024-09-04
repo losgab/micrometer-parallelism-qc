@@ -35,15 +35,14 @@ class MainWindow(QMainWindow):
         self.serport_getter = self.serport_thread = None
         self.data_getter = self.data_thread = None
         self.qr_scanner = self.qr_scanner_thread = None
+        self.init_buttons() # Test & Save buttons
+        self.init_qr_scanner()
         self.init_serport_getter()
 
         self.ui.serialport_select1.addItem("No Device Selected")
         self.portgroup1 = 1
         self.ui.serialport_select1.currentTextChanged.connect(self.serialPort1Selected)
-        # self.init_parallelism_checker() # Start parallelism checking thread
         
-        self.init_qr_scanner()
-        self.init_buttons() # Test & Save buttons
 
         self.parallelism_value = self.identifier = None
         
@@ -58,18 +57,6 @@ class MainWindow(QMainWindow):
         self.ui.button_test.clicked.connect(self.grade_part)
         self.ui.button_clear.clicked.connect(self.clear_highlights)
         self.ui.button_save.clicked.connect(self.save_data)
-
-    def compute_platform(self, data):
-        if self.portCurrent == None:
-            print("ERR: No Device Selected")
-            self.ui.grade_data.setText("ERROR: Device not connected")
-            self.ui.button_test.setText("ERROR: Device not connected")
-            return
-        else:
-            print("Something")
-        # if not self.data_getter.isRunning():
-        #     print("No data input from serial port!")
-        # print(self.receiver_thread.isRunning())
 
     # Initialise getting SERIAL PORTS
     def init_serport_getter(self):
@@ -117,7 +104,6 @@ class MainWindow(QMainWindow):
 
         self.qr_scanner.moveToThread(self.qr_scanner_thread)
 
-
         # Start signal
         # self.qr_scanner_thread.started.connect(self.qr_scanner.scanner_connect)
 
@@ -135,6 +121,11 @@ class MainWindow(QMainWindow):
 
     def grade_part(self):
         self.get_qr_id.emit()
+
+        if self.ui.serialport_select1.currentText() == "No Device Selected":
+            self.ui.grade_data.setText("No Device")
+            self.ui.parallelism_data.setText("No Device")
+            return
     
         if not self.data or any([value == None or value == "--.---" for value in self.data.values()]):
             self.ui.grade_data.setText("DATA ERROR")
@@ -142,23 +133,23 @@ class MainWindow(QMainWindow):
             self.parallelism_value = None
             return
 
+        # Calculating parallelism value
         float_data = [float(value) for value in self.data.values()]
         max_min = abs(max(float_data) - min(float_data))
-
         self.parallelism_value = str(round(max_min, 3))
 
         self.ui.parallelism_data.setText(self.parallelism_value)
 
         if (max_min <= 0.03):
             self.ui.grade_data.setText("PASS")
-            self.ui.grade.setStyleSheet("background: green")
+            self.ui.grade_data.setStyleSheet("background: green")
         else:
             self.ui.grade_data.setText("FAIL")
-            self.ui.grade.setStyleSheet("background: red")
+            self.ui.grade_data.setStyleSheet("background: red")
         
+        # Highlight points
         max_index = float_data.index(max(float_data))
         min_index = float_data.index(min(float_data))
-
         self.highlight_points([max_index, min_index])
 
     def show_identifier(self, qr_code_text):
@@ -200,7 +191,7 @@ class MainWindow(QMainWindow):
         self.ui.data7.setStyleSheet("")
         self.ui.data8.setStyleSheet("")
         self.ui.data9.setStyleSheet("")
-        self.ui.grade.setStyleSheet("")
+        self.ui.grade_data.setStyleSheet("")
 
     # SHOW SERIAL PORTS
     def serveSerialPorts(self, data):
