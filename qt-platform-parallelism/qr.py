@@ -31,7 +31,7 @@ class QRScanner(QObject):
 
         ports = QSerialPortInfo.availablePorts()
         for port in ports:
-            if port.description() != "USB Serial Device" or port.description() == "USB Single Serial":
+            if port.description() not in ["USB Serial Device", "USB Single Serial", "USBKey Module"]:
                 print(f"Skippedd port: {port.portName()} - {port.description()}")
                 continue
 
