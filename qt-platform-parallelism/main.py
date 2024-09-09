@@ -2,10 +2,15 @@
 import sys
 import pandas as pd
 import os
+from requests import post
 
 from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtCore import QThread, Signal
 from PySide6.QtCore import Qt
+
+URL = "https://script.google.com/macros/s/AKfycbx6wPNqYTieuuD5W6441Im1kWIoejl3Oze2mHHC07Wy18FoQr_Y1vQ4vJ_qXpdOeL0jYw/exec"
+data_points_key = "p"
+parallelism_value_key = "parallelismValue"
 
 # Important:
 # You need to run the following command to generate the ui_form.py file
@@ -55,7 +60,7 @@ class MainWindow(QMainWindow):
 
     def init_buttons(self):
         self.ui.button_test.clicked.connect(self.grade_part)
-        self.ui.button_clear.clicked.connect(self.clear_highlights)
+        self.ui.button_clear.clicked.connect(self.clear)
         self.ui.button_save.clicked.connect(self.save_data)
 
     # Initialise getting SERIAL PORTS
@@ -120,6 +125,7 @@ class MainWindow(QMainWindow):
         self.qr_scanner_thread.start()
 
     def grade_part(self):
+        self.clear()
         self.ui.button_test.setText("...")
         self.get_qr_id.emit()
 
@@ -184,7 +190,7 @@ class MainWindow(QMainWindow):
                 case 8:
                     self.ui.data9.setStyleSheet("background: green")
 
-    def clear_highlights(self):
+    def clear(self):
         self.ui.parallelism_data.setText("")
         self.ui.identifier_data.setText("")
         self.ui.grade_data.setText("")
@@ -291,12 +297,25 @@ class MainWindow(QMainWindow):
 
             self.get_qr_id.emit() # Get QR ID
 
-
             new_row = pd.DataFrame([{'Index': f'{index}', 'ParallelismVal': f'{self.parallelism_value}', 'Grade': f"{'PASS' if float(self.parallelism_value) < 0.03 else 'FAIL'}", 'PlatformID': f'{self.identifier}'}])
             file = pd.concat([file, new_row], ignore_index=True)
             file.to_csv(DATA_FILE, index=False)
         else:
             print("File does not exist")
+
+        post(f"{URL}?
+                {data_points_key}=
+                {str(self.data['0'])},
+                {str(self.data['1'])},
+                {str(self.data['2'])},
+                {str(self.data['3'])},
+                {str(self.data['4'])},
+                {str(self.data['5'])},
+                {str(self.data['6'])},
+                {str(self.data['7'])},
+                {str(self.data['8'])}&
+                {parallelism_value_key}=
+                {str(self.parallelism_value)}")
 
         
     def terminate_threads(self):
