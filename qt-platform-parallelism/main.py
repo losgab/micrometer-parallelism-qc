@@ -303,7 +303,7 @@ class MainWindow(QMainWindow):
         else:
             print("File does not exist")
 
-        post(f"{URL}?
+        post(f'''{URL}?
                 {data_points_key}=
                 {str(self.data['0'])},
                 {str(self.data['1'])},
@@ -315,7 +315,7 @@ class MainWindow(QMainWindow):
                 {str(self.data['7'])},
                 {str(self.data['8'])}&
                 {parallelism_value_key}=
-                {str(self.parallelism_value)}")
+                {str(self.parallelism_value)}''')
 
         
     def terminate_threads(self):
