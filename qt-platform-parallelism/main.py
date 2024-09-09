@@ -319,7 +319,7 @@ class MainWindow(QMainWindow):
             f"{str(self.parallelism_value)}"
 
 
-        post([post_url])
+        post(post_url)
 
         
     def terminate_threads(self):
