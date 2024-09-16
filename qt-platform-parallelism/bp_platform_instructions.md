@@ -1,2 +1,0 @@
-# Build Platform Measuring Instructions
-

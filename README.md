@@ -98,7 +98,7 @@ Do not place C1. Incorrect +5V. Bridge cap pads.
 |   2   |        7        |        DNC        |
 
 ### Layout of Micrometer on Jig
-![Micrometer Assignment Layout](micrometer_jig_layout.png)
+![Micrometer Assignment Layout](img/micrometer_jig_layout.png)
 
 ## Power supply + Electromagnet Driver (PN07664)
 ![Power supply](img/PN07664.png)
