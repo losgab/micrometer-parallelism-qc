@@ -67,6 +67,7 @@ class MainWindow(QMainWindow):
     def init_serport_getter(self):
         self.serport_getter = SerialPortGetter() # Serial port worker
         self.serport_thread = QThread() # Port Getter Thread
+        self.serport_thread.setParent(self)
 
         self.serport_getter.moveToThread(self.serport_thread)
 
@@ -85,6 +86,7 @@ class MainWindow(QMainWindow):
     def init_data_getter(self):
         self.data_getter = DataGetter(self.portCurrent, 10) # Serial port worker
         self.data_thread = QThread() # Port Getter Thread
+        self.data_thread.setParent(self)
 
         self.data_getter.moveToThread(self.data_thread)
 
@@ -106,6 +108,7 @@ class MainWindow(QMainWindow):
     def init_qr_scanner(self):
         self.qr_scanner = QRScanner()
         self.qr_scanner_thread = QThread()
+        self.qr_scanner_thread.setParent(self)
 
         self.qr_scanner.moveToThread(self.qr_scanner_thread)
 

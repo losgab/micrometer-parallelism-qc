@@ -1,15 +1,18 @@
 # platform-parallelism
 Asiga build platform QC machine, testing parallelism and height spec.
 
-Raspberry Pi 4
-PW: 2024
+Raspberry Pi 4 Account Details:
+Username: **zydex-engineering**
+Password: **2024**
 
-If window is closed, program can be run with measure-buildplatform in Terminal.
+If window is closed, program can be rerun with BP-JIG icon on desktop or navigating to `~/Documents/parallelism-profile-qc/qt-platform-parallelism` and running `python3 main.py`.
+
 ---
 
 # Electronics
 ## Controller (PN07665)
-Used to select micrometer to retrieve data, forwards through to USB serial. Based on ESP32-S3 Waveshare Pico MCU development board. Magnet LED is driven through switching MOSFET. Code written in ESP-IDF framework, developed on PlatformIO. Uses threads for getting data from MUX boards and forwards data on respective UART lines. Note: MCU board and PCB GND are not connected. Tie together externally during assembly. Retrieves data in millimeters, to 3 decimal places.
+![Controller](img/PN07665.png)
+Hosts ESP32-S3 MCU board, selects and gets data from all dial indicators, forwards through to USB serial. Sends signals for driving electromagnet and magnet LED. Code written in ESP-IDF framework, developed on PlatformIO. Uses FreeRTOS threads for getting data from MUX boards and forwards data on respective UART lines. Note: MCU board and PCB GND are not connected. Tie together externally during assembly. Retrieves data in millimeters (3dp). Grid array of addressable LEDs correspond to each USB port on the mux board, detecting whether a micrometer is successfully connected.
 
 - Schematic -> PN07665 EasyEDA design files/Controller
 - PCB design -> PN07665 EasyEDA design files/PCB_Controller
@@ -35,12 +38,13 @@ Used to select micrometer to retrieve data, forwards through to USB serial. Base
 |   36, 35   |              UART 2 TX/RX              |    OUTPUT/INPUT    |
 | 13, 14, 15 | SELECT lines for MUX board 1 (A, B, C) |       OUTPUT       |
 | 18, 33, 34 | SELECT lines for MUX board 2 (A, B, C) |       OUTPUT       |
-|     11     |        Electromagnet button pin        | INPUT (ACTIVE LOW) |
+|     11     |        Electromagnet button pin        | INPUTB |
 |     12     |         Electromagnet LED pin          |       OUTPUT       |
 |   37, 38   |      Electromagnet control (F, R)      |       OUTPUT       |
 |   10, 9    |        LED strip data in (1, 2)        |       OUTPUT       |
 ___
 ## MUX board (PN07646)
+![MUX board](img/PN07646.png)
 Micrometers had very minimal documentation and functionality. Only continued to work with them as we had plenty of them available, cheap and fast to get. RS232 serial communication but no flow control RTS/CTS lines, only TX/RX in a USB-C 
 
 Software that shipped with micrometers:
@@ -49,7 +53,7 @@ Software that shipped with micrometers:
 - Windows exe app only
 - No additional functionality
 
-Micrometers have an internal battery that needs to be charged. 4 or 8 way RS232 hubs that have power input and data lines MUXed into 1 usb port are $1000+, and their power supply max I found was 12V @ 3A. Each micrometer when charging draws at peak 600mA. MUX 4 micrometers at peak draw 2.4A, 8 micrometers at peak draw 4.8A. Going with hubs also increases the size of the electronics substantially. Additionally, power resetting hub messes up the ordering of the micrometers on the jig, requiring manual re-ordering of the data channels on the computer. Custom boards and firmware made to circumvent these issues such that unplugging micrometers to charge is eliminated, and the ordering of the micrometers on the jig is maintained even with power reset.
+Micrometers have an internal battery that needs to be charged. 4 or 8 way RS232 hubs that have power input and data lines MUXed into 1 usb port are $500+, and their power supply max I found was 12V @ 3A. Each micrometer when charging draws at peak 600mA. MUX 4 micrometers at peak draw 2.4A, 8 micrometers at peak draw 4.8A. Going with hubs also increases the size of the electronics substantially. Additionally, power resetting hub messes up the ordering of the micrometers on the jig, requiring manual re-ordering of the data channels on the computer. Custom boards and firmware made to circumvent these issues such that unplugging micrometers to charge is eliminated, and the ordering of the micrometers on the jig is maintained even with power reset.
 
 Do not place C1. Incorrect +5V. Bridge cap pads.
 
@@ -95,3 +99,10 @@ Do not place C1. Incorrect +5V. Bridge cap pads.
 
 ### Layout of Micrometer on Jig
 ![Micrometer Assignment Layout](micrometer_jig_layout.png)
+
+## Power supply + Electromagnet Driver (PN07664)
+![Power supply](img/PN07664.png)
+Supplies 5V power via USB-C cable to Raspberry Pi 4, Minifit Molex to MUX boards, SM4 JST-PH to controller board. Steps up voltage to 12V for electromagnet drive, and hosts magnet IC. Control lines input from SM4 controller cable. Output to electromagnet port at SM3 JST-PH. RED - board power, RED + GREEN, power to all. 
+
+- Schematic -> PN07664 EasyEDA design files/
+- PCB design -> PN07664 EasyEDA design files/

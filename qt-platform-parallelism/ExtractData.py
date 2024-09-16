@@ -15,9 +15,6 @@ class SerialPortGetter(QObject):
     def getPorts(self):
         while self.running:
             ports = QSerialPortInfo.availablePorts()
-            # for port in result:
-            #     print(port.portName())
-            # print(result)
             self.dataOut.emit(ports)
             sleep(1)
 
@@ -75,48 +72,6 @@ class DataGetter(QObject):
     # Main function for getting data from serial port
     def getData(self):
         pass
-        # currentPortNameChanged = False
-        # self.mutex.lock()
-        # # currentPortName = ""
-        # # if currentPortName != self.m_portName:
-        # #     currentPortName = self.m_portName
-        # #     currentPortNameChanged = True
-        # # currentWaitTimeout = self.m_waitTimeout
-        # # currentRespone = self.m_response
-        # self.mutex.unlock()
-
-
-        # while self.running:
-        #     if self.portName == "":
-        #         print("Port not set")
-        #         self.error.emit(str("Port not set"))
-        #         return
-        #     elif currentPortNameChanged:
-        #         port.close()
-        #         port.setPortName(self.m_portName)
-        #         if not port.open(QIODevice.ReadWrite):
-        #             print(f"Cant open {self.m_portName}, error code {serial.error()} ")
-        #             self.error.emit(str("Can't open %1, error code %2"))
-        #             return
-
-            # if serial.waitForReadyRead():
-            #     # read request
-            #     requestData = serial.readAll()
-            #     while serial.waitForReadyRead(self.waitTimeout):
-            #         requestData += serial.readAll()
-            # else:
-            #     self.timeout.emit(str("Wait read request timeout %1"))
-
-            # self.mutex.lock()
-
-            # if currentPortName != m_portName:
-            #     currentPortName = m_portName
-            #     currentPortNameChanged = True
-            # else:
-            #     currentPortNameChanged = False
-            # currentWaitTimeout = m_waitTimeout
-            # currentResponse = self.m_response
-            # self.mutex.unlock()
 
     def dataAvailable(self):
         while self.port.canReadLine():
