@@ -50,6 +50,8 @@ void dial_mux_main(void *pvParameter)
 
     uint8_t response[9] = {0};
 
+    data_message_t message;
+
     // UART setup
     uart_config_t uart_config = {
         .baud_rate = 38400,
@@ -86,9 +88,6 @@ void dial_mux_main(void *pvParameter)
     {
         for (uint8_t i = 1; i < 8; i++)
         {
-            // gpio_set_level(params->sel2, 0);
-            // gpio_set_level(params->sel1, 1);
-            // gpio_set_level(params->sel0, 1);
             gpio_set_level(params->sel2, (i >= 4) ? 1 : 0);
             gpio_set_level(params->sel1, (i == 2 || i == 3 || i == 6 || i == 7) ? 1 : 0);
             gpio_set_level(params->sel0, (i == 1 || i == 3 || i == 5 || i == 7) ? 1 : 0);
@@ -107,12 +106,12 @@ void dial_mux_main(void *pvParameter)
 
                 flags |= response[3] << i; // Setting flag at appropriate bit
 
-                // for (uint8_t a = 0; a < 9; a++)
-                //     printf("Byte %d: %d\n", a, response[a]);
-
-
                 data = (response[5] << 8) | response[6];
                 data = data / 1000;
+
+                // Data Message stuff
+                message.results[i] = data;
+                message.flags |= response[3] << i;
 
                 received = true;
 
@@ -147,6 +146,20 @@ void dial_mux_main(void *pvParameter)
             for (uint8_t i = 0; i < 9; i++)
                 response[i] = 0;
             uart_flush(params->port);
+        }
+
+        if (uxQueueMessagesWaiting(params->data_request) > 0)
+        {
+            char command;
+            xQueueReceive(params->data_request, &command, 100);
+            if (command == '0' && params->mux_id == 0)
+            {
+                xQueueSendToBack(params->data_response, (void *)(&message), 100);                
+            }
+            else if (command == '1' && params->mux_id == 1)
+            {
+
+            }
         }
         vTaskDelay(pdMS_TO_TICKS(DELAY));
     }

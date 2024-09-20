@@ -56,9 +56,12 @@ led_strip_rmt_config_t rmt_config = {
 // Queue Information
 #define MAX_ITEMS 16
 #define DATA_SIZE sizeof(data_message_t)
-QueueHandle_t queue_handle;
+
+// Signal from uart handler, sends appropriate signal when command received from
+QueueHandle_t main_request;
+// Data response from MUX tasks when data is ready
+QueueHandle_t main_response;
 uint8_t queue_storage[MAX_ITEMS * DATA_SIZE] = {0};
-static StaticQueue_t queue_data_struct;
 
 // Task data
 TaskHandle_t mux1_task, mux2_task;
@@ -122,22 +125,31 @@ static void electromagnet_button_cb(void *arg, void *data)
     }
 }
 
-// void publisher_task_main(void *pvParameter)
-// {
-//     QueueHandle_t handle = *((QueueHandle_t *)(pvParameter));
+void serial_handler(void *pvParameter)
+{
+    // QueueHandle_t queue = *((QueueHandle_t *)(pvParameter));
+#define BUF_SIZE 16
 
-//     data_message_t message;
-//     while (1)
-//     {
-//         // if (uxQueueMessagesWaiting(queue_handle) > 0)
-//         // {
-//         //     if (xQueueReceive(queue_handle, &message, 10) == pdPASS)
-//         //     {
-//         //         printf("[M%d]: %c%.3f\n", message.dial_ind, message.flag ? (uint8_t)('-') : (uint8_t)('+'), message.data);
-//         //     }
-//         // }
-//     }
-// }
+    while (1)
+    {
+        // Read data from UART0
+        // size_t len;
+        // uart_get_buffered_data_len(UART_NUM_0, &len);
+        // if (len > 0) {
+        //     printf("Received %d bytes\n", len);
+        // }
+        // while (1)
+        // {
+        //     uint8_t ch;
+        //     ch = fgetc(stdin);
+        //     if (ch != 0xFF)
+        //     {
+        //         fputc(ch, stdout);
+        //     }
+        // }
+        SYS_DELAY(200);
+    }
+}
 
 void app_main()
 {
@@ -176,15 +188,21 @@ void app_main()
     ESP_ERROR_CHECK(iot_button_register_cb(button_handle, BUTTON_PRESS_DOWN, electromagnet_button_cb, NULL));
 
     // Initialise Queue
-    queue_handle = xQueueCreateStatic(MAX_ITEMS, DATA_SIZE, queue_storage, &queue_data_struct);
-    mux1_params.queue_handle = queue_handle;
+    // uart_event_queue = xQueueCreateStatic(MAX_ITEMS, DATA_SIZE, queue_storage, &queue_data_struct);
+    main_request = xQueueCreate(MAX_ITEMS, sizeof(char));
+    main_response = xQueueCreate(MAX_ITEMS, sizeof(data_message_t));
+
+    mux1_params.data_request = mux2_params.data_request = main_request;
+    mux1_params.data_response = mux2_params.data_response = main_response;
     mux1_params.strip_handle = strip1;
-    mux2_params.queue_handle = queue_handle;
     mux2_params.strip_handle = strip2;
 
-    // xTaskCreate(publisher_task_main, "SERIAL_DATA_PUBLISHER_THREAD", 256, &queue_handle, 1, NULL);
-    xTaskCreate(dial_mux_main, "MUX1_THREAD", 4096, &mux1_params, 1, &mux1_task);
-    xTaskCreate(dial_mux_main, "MUX2_THREAD", 4096, &mux2_params, 1, &mux2_task);
+    // Worker tasks that add data to the main struct
+    // xTaskCreate(dial_mux_main, "MUX1_THREAD", 4096, &mux1_params, 1, &mux1_task);
+    // xTaskCreate(dial_mux_main, "MUX2_THREAD", 4096, &mux2_params, 1, &mux2_task);
+
+    // Serial communicator channel
+    xTaskCreate(serial_handler, "SERIAL_DATA_HANDLER_THREAD", 256, NULL, 1, NULL);
 
     // printf("%d - START\n", 0x01); // Start of Packet
     // printf("%d\n", 0x00);         // Length Packet
@@ -194,4 +212,9 @@ void app_main()
     // }
     // printf("0x0000\n");
     // printf("%d - END\n\n", 0x04); // End of Packet
+
+    // RPI sends poll command to ESP Serial Handler
+    // Serial Handler sends poll command to individual threads on main_request queue
+    // Threads send data on main_response queue
+    // Serial Handler sends data on main_response queue to RPI
 }

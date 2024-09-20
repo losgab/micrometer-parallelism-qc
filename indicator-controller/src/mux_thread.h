@@ -15,15 +15,15 @@ typedef struct dial_mux_params
     gpio_num_t sel0;
     gpio_num_t sel1;
     gpio_num_t sel2;
-    QueueHandle_t queue_handle;
+    QueueHandle_t data_request;
+    QueueHandle_t data_response;
     led_strip_handle_t strip_handle;
 } dial_mux_params_t;
 
 typedef struct data_mesage
 {
-    uint8_t dial_ind; // micrometer number
-    bool flag;        // true for negative, false for positive
-    float data;       // micrometer data
+    uint8_t flags;       // true for negative, false for positive
+    float results[8];   // Results in mm (3dp)
 } data_message_t;
 
 void dial_mux_main(void *pvParameter);
