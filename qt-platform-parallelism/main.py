@@ -321,7 +321,6 @@ class MainWindow(QMainWindow):
             f"{parallelism_value_key}=" \
             f"{str(self.parallelism_value)}"
 
-
         post(post_url)
 
         
