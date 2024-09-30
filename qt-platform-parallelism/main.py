@@ -29,7 +29,7 @@ class MainWindow(QMainWindow):
         super().__init__(parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        # self.showMaximized()
+        self.showMaximized()
 
         # Connect click/open on combo box to starting getSerialPortsThread
         # Once done, serve the results from the thread onto the UI
@@ -287,8 +287,7 @@ class MainWindow(QMainWindow):
             self.ui.identifier_data.setText("No Identifier Data")
             return
 
-        file_exists = os.path.isfile(DATA_FILE)
-        if file_exists:
+        if os.path.isfile(DATA_FILE):
             file = pd.read_csv(DATA_FILE)
             if len(file) != 0:
                 last_row = file.tail(1)

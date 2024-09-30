@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1135</width>
-    <height>686</height>
+    <width>800</width>
+    <height>480</height>
    </rect>
   </property>
   <property name="maximumSize">
    <size>
-    <width>1920</width>
-    <height>1080</height>
+    <width>800</width>
+    <height>480</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -23,72 +23,12 @@
    <bool>true</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout" stretch="1,8">
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_5">
-      <item>
-       <widget class="QLabel" name="label_23">
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>150</height>
-         </size>
-        </property>
-        <property name="autoFillBackground">
-         <bool>true</bool>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="textFormat">
-         <enum>Qt::RichText</enum>
-        </property>
-        <property name="pixmap">
-         <pixmap>img/asiga-logo.png</pixmap>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <layout class="QVBoxLayout" name="verticalLayout_4">
-        <item>
-         <widget class="QLabel" name="label_22">
-          <property name="font">
-           <font>
-            <pointsize>14</pointsize>
-           </font>
-          </property>
-          <property name="text">
-           <string>Build Platform Parallelism Measurement Machine</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="label_24">
-          <property name="font">
-           <font>
-            <pointsize>14</pointsize>
-           </font>
-          </property>
-          <property name="text">
-           <string>CHOOSE: USB Single Serial</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-     </layout>
-    </item>
+   <layout class="QVBoxLayout" name="verticalLayout" stretch="8">
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,0,0">
+      <property name="spacing">
+       <number>4</number>
+      </property>
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,1,1">
         <property name="spacing">
@@ -103,7 +43,7 @@
            <widget class="QLabel" name="data1">
             <property name="minimumSize">
              <size>
-              <width>100</width>
+              <width>120</width>
               <height>100</height>
              </size>
             </property>
@@ -136,7 +76,7 @@
            <widget class="QLabel" name="data2">
             <property name="minimumSize">
              <size>
-              <width>100</width>
+              <width>120</width>
               <height>100</height>
              </size>
             </property>
@@ -169,7 +109,7 @@
            <widget class="QLabel" name="data3">
             <property name="minimumSize">
              <size>
-              <width>100</width>
+              <width>120</width>
               <height>100</height>
              </size>
             </property>
@@ -209,7 +149,7 @@
            <widget class="QLabel" name="data4">
             <property name="minimumSize">
              <size>
-              <width>100</width>
+              <width>120</width>
               <height>100</height>
              </size>
             </property>
@@ -239,7 +179,7 @@
            <widget class="QLabel" name="data5">
             <property name="minimumSize">
              <size>
-              <width>100</width>
+              <width>120</width>
               <height>100</height>
              </size>
             </property>
@@ -269,7 +209,7 @@
            <widget class="QLabel" name="data6">
             <property name="minimumSize">
              <size>
-              <width>100</width>
+              <width>120</width>
               <height>100</height>
              </size>
             </property>
@@ -306,7 +246,7 @@
            <widget class="QLabel" name="data7">
             <property name="minimumSize">
              <size>
-              <width>100</width>
+              <width>120</width>
               <height>100</height>
              </size>
             </property>
@@ -336,7 +276,7 @@
            <widget class="QLabel" name="data8">
             <property name="minimumSize">
              <size>
-              <width>100</width>
+              <width>120</width>
               <height>100</height>
              </size>
             </property>
@@ -366,7 +306,7 @@
            <widget class="QLabel" name="data9">
             <property name="minimumSize">
              <size>
-              <width>100</width>
+              <width>120</width>
               <height>100</height>
              </size>
             </property>
@@ -431,8 +371,14 @@
         </property>
         <item>
          <widget class="QGroupBox" name="serialport_title1">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>80</height>
+           </size>
+          </property>
           <property name="title">
-           <string>Data Serial Port</string>
+           <string>Data Serial Port (CHOOSE: USB Single Serial)</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
            <item row="0" column="0">
@@ -458,20 +404,20 @@
          <widget class="QPushButton" name="button_test">
           <property name="minimumSize">
            <size>
-            <width>200</width>
+            <width>100</width>
             <height>50</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>3000</width>
-            <height>50</height>
+            <height>40</height>
            </size>
           </property>
           <property name="font">
            <font>
             <family>Cascadia Code</family>
-            <pointsize>12</pointsize>
+            <pointsize>15</pointsize>
             <bold>true</bold>
            </font>
           </property>
@@ -482,6 +428,12 @@
         </item>
         <item>
          <widget class="QGroupBox" name="grade">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>80</height>
+           </size>
+          </property>
           <property name="title">
            <string>Grade</string>
           </property>
@@ -506,6 +458,12 @@
         </item>
         <item>
          <widget class="QGroupBox" name="parallelism">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>80</height>
+           </size>
+          </property>
           <property name="title">
            <string>Parallelism (&lt;= 30 micron for pass)</string>
           </property>
@@ -530,6 +488,12 @@
         </item>
         <item>
          <widget class="QGroupBox" name="identifier">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>80</height>
+           </size>
+          </property>
           <property name="title">
            <string>Build Platform Identifier Code</string>
           </property>
@@ -565,7 +529,7 @@
             <property name="maximumSize">
              <size>
               <width>16777215</width>
-              <height>50</height>
+              <height>40</height>
              </size>
             </property>
             <property name="font">
@@ -591,13 +555,13 @@
             <property name="maximumSize">
              <size>
               <width>250</width>
-              <height>50</height>
+              <height>40</height>
              </size>
             </property>
             <property name="font">
              <font>
               <family>Cascadia Code</family>
-              <pointsize>15</pointsize>
+              <pointsize>12</pointsize>
               <bold>true</bold>
              </font>
             </property>
@@ -620,7 +584,7 @@
             <property name="maximumSize">
              <size>
               <width>16777215</width>
-              <height>50</height>
+              <height>40</height>
              </size>
             </property>
             <property name="font">
@@ -631,7 +595,7 @@
              </font>
             </property>
             <property name="text">
-             <string>SAVE RESULT</string>
+             <string>SAVE</string>
             </property>
             <property name="autoDefault">
              <bool>false</bool>
