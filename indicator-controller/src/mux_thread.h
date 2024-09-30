@@ -5,6 +5,7 @@
 #include <driver/uart.h>
 #include <driver/gpio.h>
 #include "easy_led_strip.h"
+#include "string.h"
 
 typedef struct dial_mux_params
 {

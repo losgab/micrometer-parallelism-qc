@@ -129,15 +129,32 @@ void serial_handler(void *pvParameter)
 {
     // QueueHandle_t queue = *((QueueHandle_t *)(pvParameter));
 #define BUF_SIZE 16
+    static char arr[10] = {0};
+    memset(arr, '\0', strlen(arr));
 
     while (1)
     {
-        // Read data from UART0
-        // size_t len;
-        // uart_get_buffered_data_len(UART_NUM_0, &len);
-        // if (len > 0) {
-        //     printf("Received %d bytes\n", len);
+        // if (fgets(arr, sizeof(arr), stdin) == NULL)
+        // {
+        //     printf("Error reading from stdin\n");
         // }
+        // else
+        // {
+        //     printf("Data: %s", arr);
+        //     memset(arr, '\0', strlen(arr));
+        // }
+
+        fgets(arr, sizeof(arr), stdin);
+
+        if (strlen(arr) > 0)
+        {
+            printf("Data: %s", arr);
+        }
+        else
+        {
+            memset(arr, 0, strlen(arr));
+        }
+
         // while (1)
         // {
         //     uint8_t ch;
