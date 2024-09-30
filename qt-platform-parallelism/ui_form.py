@@ -44,7 +44,7 @@ class Ui_MainWindow(object):
         self.data1.setObjectName(u"data1")
         self.data1.setMinimumSize(QSize(120, 100))
         font = QFont()
-        font.setPointSize(20)
+        font.setPointSize(15)
         self.data1.setFont(font)
         self.data1.setAutoFillBackground(False)
         self.data1.setFrameShape(QFrame.StyledPanel)
@@ -261,8 +261,8 @@ class Ui_MainWindow(object):
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
         self.button_clear = QPushButton(self.centralwidget)
         self.button_clear.setObjectName(u"button_clear")
-        self.button_clear.setMinimumSize(QSize(100, 50))
-        self.button_clear.setMaximumSize(QSize(16777215, 40))
+        self.button_clear.setMinimumSize(QSize(80, 50))
+        self.button_clear.setMaximumSize(QSize(80, 40))
         self.button_clear.setFont(font2)
 
         self.horizontalLayout_6.addWidget(self.button_clear)
@@ -271,19 +271,15 @@ class Ui_MainWindow(object):
         self.button_connect_scanner.setObjectName(u"button_connect_scanner")
         self.button_connect_scanner.setMinimumSize(QSize(100, 50))
         self.button_connect_scanner.setMaximumSize(QSize(250, 40))
-        font4 = QFont()
-        font4.setFamilies([u"Cascadia Code"])
-        font4.setPointSize(12)
-        font4.setBold(True)
-        self.button_connect_scanner.setFont(font4)
+        self.button_connect_scanner.setFont(font2)
         self.button_connect_scanner.setAutoDefault(False)
 
         self.horizontalLayout_6.addWidget(self.button_connect_scanner)
 
         self.button_save = QPushButton(self.centralwidget)
         self.button_save.setObjectName(u"button_save")
-        self.button_save.setMinimumSize(QSize(100, 50))
-        self.button_save.setMaximumSize(QSize(16777215, 40))
+        self.button_save.setMinimumSize(QSize(80, 50))
+        self.button_save.setMaximumSize(QSize(80, 40))
         self.button_save.setFont(font2)
         self.button_save.setAutoDefault(False)
 
@@ -330,7 +326,7 @@ class Ui_MainWindow(object):
         self.identifier.setTitle(QCoreApplication.translate("MainWindow", u"Build Platform Identifier Code", None))
         self.identifier_data.setText(QCoreApplication.translate("MainWindow", u"-", None))
         self.button_clear.setText(QCoreApplication.translate("MainWindow", u"CLEAR", None))
-        self.button_connect_scanner.setText(QCoreApplication.translate("MainWindow", u"CONNECT SCANNER", None))
+        self.button_connect_scanner.setText(QCoreApplication.translate("MainWindow", u"SCAN", None))
         self.button_save.setText(QCoreApplication.translate("MainWindow", u"SAVE", None))
     # retranslateUi
 
