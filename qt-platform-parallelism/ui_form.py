@@ -218,7 +218,7 @@ class Ui_MainWindow(object):
         self.grade_data = QLabel(self.grade)
         self.grade_data.setObjectName(u"grade_data")
         font3 = QFont()
-        font3.setPointSize(30)
+        font3.setPointSize(20)
         self.grade_data.setFont(font3)
         self.grade_data.setAlignment(Qt.AlignCenter)
 

@@ -442,7 +442,7 @@
             <widget class="QLabel" name="grade_data">
              <property name="font">
               <font>
-               <pointsize>30</pointsize>
+               <pointsize>20</pointsize>
               </font>
              </property>
              <property name="text">
@@ -472,7 +472,7 @@
             <widget class="QLabel" name="parallelism_data">
              <property name="font">
               <font>
-               <pointsize>30</pointsize>
+               <pointsize>20</pointsize>
               </font>
              </property>
              <property name="text">
@@ -502,7 +502,7 @@
             <widget class="QLabel" name="identifier_data">
              <property name="font">
               <font>
-               <pointsize>30</pointsize>
+               <pointsize>20</pointsize>
               </font>
              </property>
              <property name="text">
