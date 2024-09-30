@@ -147,8 +147,8 @@ class MainWindow(QMainWindow):
 
         # Calculating parallelism value
         float_data = [float(value) for value in self.data.values()]
-        max_min = abs(max(float_data) - min(float_data))
-        self.parallelism_value = str(round(max_min, 3))
+        max_min = round(abs(max(float_data) - min(float_data)), 3)
+        self.parallelism_value = str(max_min)
 
         self.ui.parallelism_data.setText(self.parallelism_value)
 
