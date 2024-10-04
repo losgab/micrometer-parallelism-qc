@@ -63,7 +63,9 @@ class DataGetter(QObject):
         self.port.setDataBits(QSerialPort.Data8)
         self.port.setParity(QSerialPort.NoParity)
         self.port.setStopBits(QSerialPort.OneStop)
-        open = self.port.open(QSerialPort.ReadOnly)
+        
+        self.port.clear()
+        self.port.open(QSerialPort.ReadWrite)
 
         if not self.port.isOpen():
             self.port.close()
@@ -80,7 +82,7 @@ class DataGetter(QObject):
 
             received_data = str(serial_data).split(' ')
 
-            # print(f"Received data: {received_data}")
+            print(f"Received data: {received_data}")
                 
             if not (received_data[0].startswith("[M") and received_data[0].endswith("]:")):
                 continue
