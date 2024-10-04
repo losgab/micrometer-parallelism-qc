@@ -284,11 +284,11 @@ class MainWindow(QMainWindow):
             # Apply bias to numbers that are valid
             match int(key):
                 case 0 | 1 | 2:
-                    self.data[key] = str(float(value) + BIAS_BACK_ROW)
+                    self.data[key] = f"{round(float(value) + BIAS_BACK_ROW, 3)}"
                 case 3 | 4 | 5:
-                    self.data[key] = str(float(value) + BIAS_MIDDLE_ROW)
+                    self.data[key] = f"{round(float(value) + BIAS_MIDDLE_ROW, 3)}"
                 case 6 | 7 | 8:
-                    self.data[key] = str(float(value) + BIAS_FRONT_ROW)
+                    self.data[key] = f"{round(float(value) + BIAS_FRONT_ROW, 3)}"
 
         for key, value in self.data.items():
             match int(key):
