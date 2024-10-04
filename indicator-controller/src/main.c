@@ -215,11 +215,11 @@ void app_main()
     mux2_params.strip_handle = strip2;
 
     // Worker tasks that add data to the main struct
-    // xTaskCreate(dial_mux_main, "MUX1_THREAD", 4096, &mux1_params, 1, &mux1_task);
-    // xTaskCreate(dial_mux_main, "MUX2_THREAD", 4096, &mux2_params, 1, &mux2_task);
+    xTaskCreate(dial_mux_main, "MUX1_THREAD", 4096, &mux1_params, 1, &mux1_task);
+    xTaskCreate(dial_mux_main, "MUX2_THREAD", 4096, &mux2_params, 1, &mux2_task);
 
     // Serial communicator channel
-    xTaskCreate(serial_handler, "SERIAL_DATA_HANDLER_THREAD", 256, NULL, 1, NULL);
+    // xTaskCreate(serial_handler, "SERIAL_DATA_HANDLER_THREAD", 256, NULL, 1, NULL);
 
     // printf("%d - START\n", 0x01); // Start of Packet
     // printf("%d\n", 0x00);         // Length Packet

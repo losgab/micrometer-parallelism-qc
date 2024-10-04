@@ -6,7 +6,7 @@
 
 #define RESPONSE_TIMEOUT 50
 
-#define DELAY 500
+#define DELAY 2000
 
 // Micrometer Query Command
 const uint8_t query[] = {0x01, 0x03, 0x00, 0x00, 0x00, 0x02, 0xC4, 0x0B}; // Micrometer Specific Query Instruction
@@ -14,7 +14,7 @@ const uint8_t query[] = {0x01, 0x03, 0x00, 0x00, 0x00, 0x02, 0xC4, 0x0B}; // Mic
 // Dummy Data
 const float dummy_data[] = {1.509, 1.517, 1.666, 1.540, 1.575, 1.629, 1.684, 1.661, 1.614};
 
-bool dummy = true;
+bool dummy = false;
 
 esp_err_t uart_init(uart_port_t port, gpio_num_t tx_pin, gpio_num_t rx_pin, uart_config_t *uart_config)
 {
@@ -131,11 +131,11 @@ void dial_mux_main(void *pvParameter)
                 if (dummy && i < 9)
                 {
                     printf("[M%d]: %.3f\n", i + mux_dial_start, dummy_data[i]);
-                    char chr[10];
-                    scanf("%9s", chr);
-                    printf("\nData entered : %s\n", chr);
-                    strcpy(chr, "");
-                    vTaskDelay(pdMS_TO_TICKS(500));
+                    // char chr[10];
+                    // scanf("%9s", chr);
+                    // printf("\nData entered : %s\n", chr);
+                    // strcpy(chr, "");
+                    // vTaskDelay(pdMS_TO_TICKS(500));
                 }
                 else
                 {
@@ -153,19 +153,19 @@ void dial_mux_main(void *pvParameter)
             uart_flush(params->port);
         }
 
-        if (uxQueueMessagesWaiting(params->data_request) > 0)
-        {
-            char command;
-            xQueueReceive(params->data_request, &command, 100);
-            if (command == '0' && params->mux_id == 0)
-            {
-                xQueueSendToBack(params->data_response, (void *)(&message), 100);                
-            }
-            else if (command == '1' && params->mux_id == 1)
-            {
+        // if (uxQueueMessagesWaiting(params->data_request) > 0)
+        // {
+        //     char command;
+        //     xQueueReceive(params->data_request, &command, 100);
+        //     if (command == '0' && params->mux_id == 0)
+        //     {
+        //         xQueueSendToBack(params->data_response, (void *)(&message), 100);                
+        //     }
+        //     else if (command == '1' && params->mux_id == 1)
+        //     {
 
-            }
-        }
+        //     }
+        // }
         vTaskDelay(pdMS_TO_TICKS(DELAY));
     }
 }
