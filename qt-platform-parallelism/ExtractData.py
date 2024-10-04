@@ -60,12 +60,13 @@ class DataGetter(QObject):
 
         self.port.setPortName(self.portName)
         self.port.setBaudRate(QSerialPort.Baud115200, QSerialPort.AllDirections)
+        self.port.setFlowControl(QSerialPort.NoFlowControl)
         self.port.setDataBits(QSerialPort.Data8)
         self.port.setParity(QSerialPort.NoParity)
         self.port.setStopBits(QSerialPort.OneStop)
-        
-        self.port.clear()
+
         self.port.open(QSerialPort.ReadWrite)
+        self.port.clear()
 
         if not self.port.isOpen():
             self.port.close()
