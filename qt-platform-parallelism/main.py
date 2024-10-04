@@ -12,6 +12,10 @@ URL = "https://script.google.com/macros/s/AKfycbx6wPNqYTieuuD5W6441Im1kWIoejl3Oz
 data_points_key = "p"
 parallelism_value_key = "parallelismValue"
 
+BIAS_BACK_ROW = 0.000 # Indicators 0, 1, 2
+BIAS_MIDDLE_ROW = 0.001 # Indicators 3, 4, 5
+BIAS_FRONT_ROW = 0.002 # Indicators 6, 7, 8
+
 # Important:
 # You need to run the following command to generate the ui_form.py file
 #     pyside6-uic form.ui -o ui_form.py
@@ -35,6 +39,9 @@ class MainWindow(QMainWindow):
         # Once done, serve the results from the thread onto the UI
 
         self.data = {}
+        self.num_valid_data = 0
+
+        self.show_bias()
 
         # Initialise serial port refresher thread
         self.serport_getter = self.serport_thread = None
@@ -48,10 +55,8 @@ class MainWindow(QMainWindow):
         self.portgroup1 = 1
         self.ui.serialport_select1.currentTextChanged.connect(self.serialPort1Selected)
         
-
         self.parallelism_value = self.identifier = None
         
-
         # Terminate all threads
         app.aboutToQuit.connect(self.terminate_threads)
 
@@ -62,6 +67,17 @@ class MainWindow(QMainWindow):
         self.ui.button_test.clicked.connect(self.grade_part)
         self.ui.button_clear.clicked.connect(self.clear)
         self.ui.button_save.clicked.connect(self.save_data)
+
+    def show_bias(self):
+        self.ui.data1_bias.setTitle(f"{BIAS_BACK_ROW}")
+        self.ui.data2_bias.setTitle(f"{BIAS_BACK_ROW}")
+        self.ui.data3_bias.setTitle(f"{BIAS_BACK_ROW}")
+        self.ui.data4_bias.setTitle(f"{BIAS_MIDDLE_ROW}")
+        self.ui.data5_bias.setTitle(f"{BIAS_MIDDLE_ROW}")
+        self.ui.data6_bias.setTitle(f"{BIAS_MIDDLE_ROW}")
+        self.ui.data7_bias.setTitle(f"{BIAS_FRONT_ROW}")
+        self.ui.data8_bias.setTitle(f"{BIAS_FRONT_ROW}")
+        self.ui.data9_bias.setTitle(f"{BIAS_FRONT_ROW}")
 
     # Initialise getting SERIAL PORTS
     def init_serport_getter(self):
@@ -138,7 +154,7 @@ class MainWindow(QMainWindow):
             self.ui.button_test.setText("TEST PLATFORM")
             return
     
-        if not self.data or any([value == None or value == "--.---" for value in self.data.values()]):
+        if not self.data or self.num_valid_data < 8: # Accepts 8 or 9 data points
             self.ui.grade_data.setText("DATA ERROR")
             self.ui.parallelism_data.setText("DATA ERROR")
             self.ui.button_test.setText("TEST PLATFORM")
@@ -146,7 +162,7 @@ class MainWindow(QMainWindow):
             return
 
         # Calculating parallelism value
-        float_data = [float(value) for value in self.data.values()]
+        float_data = [float(value) for value in self.data.values() if value != "--.---"]
         max_min = round(abs(max(float_data) - min(float_data)), 3)
         self.parallelism_value = str(max_min)
 
@@ -234,8 +250,8 @@ class MainWindow(QMainWindow):
             return
 
         # Get raw port name from selection
-        portName = portName.split(' ')[0]
         # print(portName)
+        portName = portName.split(' ')[0]
         for char in ('[', ']'):
             portName = portName.replace(char, '')
 
@@ -257,26 +273,43 @@ class MainWindow(QMainWindow):
 
         self.data = data
 
-        for i in data.keys():
-            match int(i):
-                case 0: #
-                    self.ui.data1.setText(data[i])
+        # Apply bias to numbers that are valid
+        self.num_valid_data = 9
+        for key, value in self.data.items():
+            # Check if value is a valid real number
+            if self.data[key] == "--.---":
+                self.num_valid_data -= 1 # Decrement number of valid data
+                continue
+
+            # Apply bias to numbers that are valid
+            match int(key):
+                case 0 | 1 | 2:
+                    self.data[key] = str(float(value) + BIAS_BACK_ROW)
+                case 3 | 4 | 5:
+                    self.data[key] = str(float(value) + BIAS_MIDDLE_ROW)
+                case 6 | 7 | 8:
+                    self.data[key] = str(float(value) + BIAS_FRONT_ROW)
+
+        for key, value in self.data.items():
+            match int(key):
+                case 0:
+                    self.ui.data1.setText(value)
                 case 1:
-                    self.ui.data2.setText(data[i])
+                    self.ui.data2.setText(value)
                 case 2:
-                    self.ui.data3.setText(data[i])
+                    self.ui.data3.setText(value)
                 case 3:
-                    self.ui.data4.setText(data[i])
+                    self.ui.data4.setText(value)
                 case 4:
-                    self.ui.data5.setText(data[i])
+                    self.ui.data5.setText(value)
                 case 5:
-                    self.ui.data6.setText(data[i])
+                    self.ui.data6.setText(value)
                 case 6:
-                    self.ui.data7.setText(data[i])
+                    self.ui.data7.setText(value)
                 case 7:
-                    self.ui.data8.setText(data[i])
+                    self.ui.data8.setText(value)
                 case 8:
-                    self.ui.data9.setText(data[i])
+                    self.ui.data9.setText(value)
 
     def save_data(self):
         if self.parallelism_value == None:
