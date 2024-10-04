@@ -112,7 +112,6 @@ class MainWindow(QMainWindow):
         self.data_thread.started.connect(self.data_getter.getData)
 
         # Process data received signal
-        self.data_getter.dataOut.connect(self.display_values)
         # self.data_getter.dataOut.connect(self.parallelism_checker.receive)
 
         # Termination Signals
@@ -120,6 +119,7 @@ class MainWindow(QMainWindow):
         self.data_getter.finished.connect(self.data_thread.wait) # Wait for thread to finish quitting
         self.data_thread.finished.connect(self.data_thread.deleteLater) # When thread is finished, signal thread cleanup
         self.data_getter.finished.connect(self.data_getter.deleteLater) # When getter is finished, signal getter cleanup
+        self.data_getter.dataOut.connect(self.display_values)
         self.data_thread.start()
 
     # Initialise QR Scanner
