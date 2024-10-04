@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 import sys
 import pandas as pd
-import os
+from os import path
 from requests import post
 
 from PySide6.QtWidgets import QApplication, QMainWindow
@@ -90,12 +90,14 @@ class MainWindow(QMainWindow):
         # Start signal
         self.serport_thread.started.connect(self.serport_getter.getPorts)
 
+        # Serve serial ports signal
+        self.serport_getter.dataOut.connect(self.serveSerialPorts) # Connect data signal to receiver function
+        
         # Termination Signals
         self.serport_getter.finished.connect(self.serport_thread.quit) # When getter is finished, tell thread to quit
         self.serport_getter.finished.connect(self.serport_thread.wait) # When getter is finished, tell thread to quit
         self.serport_thread.finished.connect(self.serport_thread.deleteLater) # When thread is finished, signal thread cleanup
         self.serport_getter.finished.connect(self.serport_getter.deleteLater) # When getter is finished, signal getter cleanup
-        self.serport_getter.dataOut.connect(self.serveSerialPorts) # Connect data signal to receiver function
         self.serport_thread.start()
 
     # Initialising getting DATA FROM SERIAL PORT
@@ -320,7 +322,7 @@ class MainWindow(QMainWindow):
             self.ui.identifier_data.setText("No Identifier Data")
             return
 
-        if os.path.isfile(DATA_FILE):
+        if path.isfile(DATA_FILE):
             file = pd.read_csv(DATA_FILE)
             if len(file) != 0:
                 last_row = file.tail(1)

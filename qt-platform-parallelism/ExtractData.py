@@ -29,6 +29,7 @@ class DataGetter(QObject):
     running = True
     finished = Signal()
 
+    # Do mapping from IN-USE ports to INDEX
     mux_ports_in_use = [1, 2, 4, 5, 6, 9, 10, 12, 13]
 
     data = {
@@ -62,7 +63,7 @@ class DataGetter(QObject):
         self.port.setDataBits(QSerialPort.Data8)
         self.port.setParity(QSerialPort.NoParity)
         self.port.setStopBits(QSerialPort.OneStop)
-        self.port.open(QSerialPort.ReadWrite)
+        open = self.port.open(QSerialPort.ReadOnly)
 
         if not self.port.isOpen():
             self.port.close()
@@ -74,53 +75,51 @@ class DataGetter(QObject):
         pass
 
     def dataAvailable(self):
-        while self.port.canReadLine():
+        while self.port.canReadLine() and self.running:
             serial_data = self.port.readLine().data().decode().strip()
 
             received_data = str(serial_data).split(' ')
 
-            # print(received_data)
-
-            for char in ('M', '[', ']', ':'):
-                received_data[0] = received_data[0].replace(char, '')
-
-            if int(received_data[0]) not in self.mux_ports_in_use:
+            # print(f"Received data: {received_data}")
+                
+            if not (received_data[0].startswith("[M") and received_data[0].endswith("]:")):
                 continue
 
-            index = int(received_data[0])
+            # Strip unwanted characters
+            for char in ('[', 'M', ']', ':'):
+                received_data[0] = received_data[0].replace(char, '')
 
-            match int(index):
+            # Check if USB ports being used
+            index = int(received_data[0])
+            if index not in self.mux_ports_in_use:
+                continue
+
+            match index:
                 case 1:
                     self.data['0'] = received_data[1]
-                    self.dataOut.emit(self.data)
                 case 2:
                     self.data['1'] = received_data[1]
-                    self.dataOut.emit(self.data)
                 case 4:
                     self.data['2'] = received_data[1]
-                    self.dataOut.emit(self.data)
                 case 5:
                     self.data['3'] = received_data[1]
-                    self.dataOut.emit(self.data)
                 case 6:
                     self.data['4'] = received_data[1]
-                    self.dataOut.emit(self.data)
                 case 9:
                     self.data['5'] = received_data[1]
-                    self.dataOut.emit(self.data)
                 case 10:
                     self.data['6'] = received_data[1]
-                    self.dataOut.emit(self.data)
                 case 12:
                     self.data['7'] = received_data[1]
-                    self.dataOut.emit(self.data)
                 case 13:
                     self.data['8'] = received_data[1]
-                    self.dataOut.emit(self.data)
+
+            self.dataOut.emit(self.data)
+            
 
     def finish(self):
-        self.port.close()
         self.running = False
+        self.port.close()
         self.finished.emit()
 
 
