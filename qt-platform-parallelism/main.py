@@ -28,6 +28,8 @@ DATA_FILE = "data.csv"
 
 class MainWindow(QMainWindow):
     get_qr_id = Signal()
+
+    new_serial_port_name = Signal(str)
     
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -46,10 +48,12 @@ class MainWindow(QMainWindow):
         # Initialise serial port refresher thread
         self.serport_getter = self.serport_thread = None
         self.data_getter = self.data_thread = None
+
         self.qr_scanner = self.qr_scanner_thread = None
         self.init_buttons() # Test & Save buttons
         self.init_qr_scanner()
         self.init_serport_getter()
+        self.init_data_getter()
 
         self.ui.serialport_select1.addItem("No Device Selected")
         self.portgroup1 = 1
@@ -102,14 +106,15 @@ class MainWindow(QMainWindow):
 
     # Initialising getting DATA FROM SERIAL PORT
     def init_data_getter(self):
-        self.data_getter = DataGetter(self.portCurrent, 10) # Serial port worker
+        self.data_getter = DataGetter() # Serial port worker
         self.data_thread = QThread() # Port Getter Thread
-        self.data_thread.setParent(self)
+        # self.data_thread.setParent(self)
 
         self.data_getter.moveToThread(self.data_thread)
 
-        # Start signal
-        self.data_thread.started.connect(self.data_getter.getData)
+        # Connect New Serial Port signal to handler in class
+        self.new_serial_port_name.connect(self.data_getter.newSerialPort)
+        # self.data_thread.started.connect(self.data_getter.getData)
 
         # Process data received signal
         # self.data_getter.dataOut.connect(self.parallelism_checker.receive)
@@ -126,17 +131,16 @@ class MainWindow(QMainWindow):
     def init_qr_scanner(self):
         self.qr_scanner = QRScanner()
         self.qr_scanner_thread = QThread()
-        self.qr_scanner_thread.setParent(self)
+        # self.qr_scanner_thread.setParent(self)
 
-        self.qr_scanner.moveToThread(self.qr_scanner_thread)
+        self.ui.button_connect_scanner.clicked.connect(self.qr_scanner.find_scanner)
+        self.qr_scanner.qr_identifier.connect(self.show_identifier)
 
-        # Start signal
         # self.qr_scanner_thread.started.connect(self.qr_scanner.scanner_connect)
+        self.qr_scanner.moveToThread(self.qr_scanner_thread)
 
         # Signals
         self.get_qr_id.connect(self.qr_scanner.read_qr)
-        self.qr_scanner.qr_identifier.connect(self.show_identifier)
-        self.ui.button_connect_scanner.clicked.connect(self.qr_scanner.find_scanner)
 
         # Termination Signals
         self.qr_scanner.finished.connect(self.qr_scanner_thread.quit) # When getter is finished, tell thread to quit
@@ -258,16 +262,18 @@ class MainWindow(QMainWindow):
             portName = portName.replace(char, '')
 
         # Gets the currently selected port
-
+ 
         if self.portCurrent != portName:
-            print(f"New Port: {self.portCurrent} -> {portName}")
+            # print(f"New Port: {self.portCurrent} -> {portName}")
 
-            if self.portCurrent is not None:
-                self.data_getter.finish()
+            # if self.portCurrent is not None:
+            #     self.data_getter.finish()
 
             self.portCurrent = portName
-            self.init_data_getter()
-            print(f"Thread started for port: {str(self.ui.serialport_select1.currentText())}")
+            # self.init_data_getter()
+            self.new_serial_port_name.emit(portName)
+            
+            # print(f"Thread started for port: {str(self.ui.serialport_select1.currentText())}")
 
     # Display received values
     def display_values(self, data):
@@ -361,7 +367,7 @@ class MainWindow(QMainWindow):
     def terminate_threads(self):
         if self.serport_thread.isRunning():
             self.serport_getter.finish()
-        if self.data_thread is not None:
+        if self.data_thread.isRunning(): # Thread for data getter
             self.data_getter.finish()
         if self.qr_scanner_thread.isRunning(): # Thread for parallelism checker
             self.qr_scanner.finish_all()
