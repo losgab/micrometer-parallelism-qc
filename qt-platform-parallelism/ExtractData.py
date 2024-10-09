@@ -151,10 +151,10 @@ class DataGetter(QObject):
                 # Checking if port in use
                 if index not in self.mux_ports_in_use:
                     continue
+            else:
             # Micrometer value
-            elif string.replace(".", "").isnumeric() or string == "--.---":
+            # elif string.replace(".", "").isnumeric() or string == "--.---":
                 value = string
-                # print(type(value))
                 print(f"Index: {index}, Value: {string}")
 
                 match index:
