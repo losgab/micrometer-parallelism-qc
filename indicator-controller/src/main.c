@@ -127,44 +127,10 @@ static void electromagnet_button_cb(void *arg, void *data)
 
 void serial_handler(void *pvParameter)
 {
-    // QueueHandle_t queue = *((QueueHandle_t *)(pvParameter));
-#define BUF_SIZE 16
-    static char arr[10] = {0};
-    memset(arr, '\0', strlen(arr));
+    QueueHandle_t queue = *((QueueHandle_t *)(pvParameter));
 
     while (1)
     {
-        // if (fgets(arr, sizeof(arr), stdin) == NULL)
-        // {
-        //     printf("Error reading from stdin\n");
-        // }
-        // else
-        // {
-        //     printf("Data: %s", arr);
-        //     memset(arr, '\0', strlen(arr));
-        // }
-
-        fgets(arr, sizeof(arr), stdin);
-
-        if (strlen(arr) > 0)
-        {
-            printf("Data: %s", arr);
-        }
-        else
-        {
-            memset(arr, 0, strlen(arr));
-        }
-
-        // while (1)
-        // {
-        //     uint8_t ch;
-        //     ch = fgetc(stdin);
-        //     if (ch != 0xFF)
-        //     {
-        //         fputc(ch, stdout);
-        //     }
-        // }
-        SYS_DELAY(200);
     }
 }
 
@@ -216,10 +182,13 @@ void app_main()
 
     // Worker tasks that add data to the main struct
     xTaskCreate(dial_mux_main, "MUX1_THREAD", 4096, &mux1_params, 1, &mux1_task);
+    
+    SYS_DELAY(500);
+    
     xTaskCreate(dial_mux_main, "MUX2_THREAD", 4096, &mux2_params, 1, &mux2_task);
 
     // Serial communicator channel
-    // xTaskCreate(serial_handler, "SERIAL_DATA_HANDLER_THREAD", 256, NULL, 1, NULL);
+    // xTaskCreate(serial_handler, "SERIAL_DATA_HANDLER_THREAD", 256, &main_response, 1, NULL);
 
     // printf("%d - START\n", 0x01); // Start of Packet
     // printf("%d\n", 0x00);         // Length Packet

@@ -6,7 +6,7 @@
 
 #define RESPONSE_TIMEOUT 50
 
-#define DELAY 2000
+#define DELAY 200
 
 // Micrometer Query Command
 const uint8_t query[] = {0x01, 0x03, 0x00, 0x00, 0x00, 0x02, 0xC4, 0x0B}; // Micrometer Specific Query Instruction
@@ -151,6 +151,7 @@ void dial_mux_main(void *pvParameter)
             for (uint8_t i = 0; i < 9; i++)
                 response[i] = 0;
             uart_flush(params->port);
+            vTaskDelay(pdMS_TO_TICKS(100));
         }
 
         // if (uxQueueMessagesWaiting(params->data_request) > 0)
@@ -166,6 +167,5 @@ void dial_mux_main(void *pvParameter)
 
         //     }
         // }
-        vTaskDelay(pdMS_TO_TICKS(DELAY));
     }
 }
