@@ -747,7 +747,7 @@
            </size>
           </property>
           <property name="title">
-           <string>Parallelism (&lt;= 30 micron for pass)</string>
+           <string>Parallelism (&lt;= 35 micron for pass)</string>
           </property>
           <layout class="QGridLayout" name="gridLayout">
            <item row="0" column="0">

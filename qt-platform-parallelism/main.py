@@ -174,7 +174,7 @@ class MainWindow(QMainWindow):
 
         self.ui.parallelism_data.setText(self.parallelism_value)
 
-        if (max_min <= 0.03):
+        if (max_min <= 0.035):
             self.ui.grade_data.setText("PASS")
             self.ui.grade_data.setStyleSheet("background: green")
         else:

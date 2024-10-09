@@ -444,7 +444,7 @@ class Ui_MainWindow(object):
         self.button_test.setText(QCoreApplication.translate("MainWindow", u"TEST PLATFORM", None))
         self.grade.setTitle(QCoreApplication.translate("MainWindow", u"Grade", None))
         self.grade_data.setText(QCoreApplication.translate("MainWindow", u"-", None))
-        self.parallelism.setTitle(QCoreApplication.translate("MainWindow", u"Parallelism (<= 30 micron for pass)", None))
+        self.parallelism.setTitle(QCoreApplication.translate("MainWindow", u"Parallelism (<= 35 micron for pass)", None))
         self.parallelism_data.setText(QCoreApplication.translate("MainWindow", u"-", None))
         self.identifier.setTitle(QCoreApplication.translate("MainWindow", u"Build Platform Identifier Code", None))
         self.identifier_data.setText(QCoreApplication.translate("MainWindow", u"-", None))
