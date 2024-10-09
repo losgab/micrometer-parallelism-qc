@@ -108,76 +108,76 @@ class DataGetter(QObject):
 
         # print(incoming_data.split())
 
-        index, value = incoming_data.split()
-        if index.startswith("[M") and index.endswith("]:"):
-            index = int(sub(r'[\[\]:M]', '', index))
+        # index, value = incoming_data.split()
+        # if index.startswith("[M") and index.endswith("]:"):
+        #     index = int(sub(r'[\[\]:M]', '', index))
 
-            # Checking if port in use
-            if index not in self.mux_ports_in_use:
-                return
+        #     # Checking if port in use
+        #     if index not in self.mux_ports_in_use:
+        #         return
 
-        print(f"Index: {index}, Value: {value}")
+        # print(f"Index: {index}, Value: {value}")
 
-        match index:
-            case 1:
-                self.data['0'] = value
-            case 2:
-                self.data['1'] = value
-            case 4:
-                self.data['2'] = value
-            case 5:
-                self.data['3'] = value
-            case 6:
-                self.data['4'] = value
-            case 9:
-                self.data['5'] = value
-            case 10:
-                self.data['6'] = value
-            case 12:
-                self.data['7'] = value
-            case 13:
-                self.data['8'] = value
+        # match index:
+        #     case 1:
+        #         self.data['0'] = value
+        #     case 2:
+        #         self.data['1'] = value
+        #     case 4:
+        #         self.data['2'] = value
+        #     case 5:
+        #         self.data['3'] = value
+        #     case 6:
+        #         self.data['4'] = value
+        #     case 9:
+        #         self.data['5'] = value
+        #     case 10:
+        #         self.data['6'] = value
+        #     case 12:
+        #         self.data['7'] = value
+        #     case 13:
+        #         self.data['8'] = value
         
-        self.dataOut.emit(self.data)
+        # self.dataOut.emit(self.data)
 
 
 
-        # index, value = None, None
-        # for string in incoming_data.split():
-        #     # Micrometer index number
-        #     if string.startswith("[M") and string.endswith("]:"):
-        #         index = int(sub(r'[\[\]:M]', '', string))
+        index, value = None, None
+        for string in incoming_data.split():
+            # Micrometer index number
+            if string.startswith("[M") and string.endswith("]:"):
+                index = int(sub(r'[\[\]:M]', '', string))
 
-        #         # Checking if port in use
-        #         if index not in self.mux_ports_in_use:
-        #             continue
-        #     # Micrometer value
-        #     elif string.replace(".", "").isnumeric() or string == "--.---":
-        #         value = string
-        #         # print(type(value))
-        #         print(f"Index: {index}, Value: {string}")
+                # Checking if port in use
+                if index not in self.mux_ports_in_use:
+                    continue
+            # Micrometer value
+            elif string.replace(".", "").isnumeric() or string == "--.---":
+                value = string
+                # print(type(value))
+                print(f"Index: {index}, Value: {string}")
 
-        #         match index:
-        #             case 1:
-        #                 self.data['0'] = value
-        #             case 2:
-        #                 self.data['1'] = value
-        #             case 4:
-        #                 self.data['2'] = value
-        #             case 5:
-        #                 self.data['3'] = value
-        #             case 6:
-        #                 self.data['4'] = value
-        #             case 9:
-        #                 self.data['5'] = value
-        #             case 10:
-        #                 self.data['6'] = value
-        #             case 12:
-        #                 self.data['7'] = value
-        #             case 13:
-        #                 self.data['8'] = value
+                match index:
+                    case 1:
+                        self.data['0'] = value
+                    case 2:
+                        self.data['1'] = value
+                    case 4:
+                        self.data['2'] = value
+                    case 5:
+                        self.data['3'] = value
+                    case 6:
+                        self.data['4'] = value
+                    case 9:
+                        self.data['5'] = value
+                    case 10:
+                        self.data['6'] = value
+                    case 12:
+                        self.data['7'] = value
+                    case 13:
+                        self.data['8'] = value
                 
-        #         self.dataOut.emit(self.data)
+                self.dataOut.emit(self.data)
 
 
 
