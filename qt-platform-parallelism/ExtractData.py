@@ -82,7 +82,7 @@ class DataGetter(QObject):
         print(f"New serial port: {newPortName}")
         self.port.setPortName(newPortName)
         self.port.open(QSerialPort.ReadOnly)
-        self.port.setDataTerminalReady(False)
+        # self.port.setDataTerminalReady(False)
         # self.port.setDataTerminalReady(False)
 
         if not self.port.isOpen():
