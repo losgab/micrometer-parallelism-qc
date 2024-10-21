@@ -3,6 +3,7 @@ import sys
 import pandas as pd
 from os import path
 from requests import post
+from datetime import datetime
 
 from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtCore import QThread, Signal
@@ -319,48 +320,79 @@ class MainWindow(QMainWindow):
                     self.ui.data9.setText(value)
 
     def save_data(self):
-        if self.parallelism_value == None:
-            self.ui.parallelism_data.setText("No Parallelism Data")
-            return
+        # if self.parallelism_value == None:
+        #     self.ui.parallelism_data.setText("No Parallelism Data")
+        #     return
 
-        if self.identifier == None:
-            self.ui.identifier_data.setText("No Identifier Data")
-            return
+        # if self.identifier == None:
+        #     self.ui.identifier_data.setText("No Identifier Data")
+        #     return
+        date = datetime.now().strftime("%H:%M - %d/%m/%Y")
+        PlatformID = self.ui.identifier_data.text()
+        grade = self.ui.grade_data.text()
+        MaxMin = self.ui.parallelism_data.text()
+        point_data = {
+            "P0": "-",
+            "P1": "-",
+            "P2": "-",
+            "P3": "-",
+            "P4": "-",
+            "P5": "-",
+            "P6": "-",
+            "P7": "-",
+            "P8": "-"
+        } if self.data == {} else self.data
+        # grade = "PASS" if round(float(self.parallelism_value), 3) < 0.035 else "FAIL"
+        # MaxMin = f"{round(float(self.parallelism_value), 3)}"
 
         if path.isfile(DATA_FILE):
             file = pd.read_csv(DATA_FILE)
-            if len(file) != 0:
-                last_row = file.tail(1)
-                print(last_row)
-                last_row_list = last_row.values.tolist()[0]
-                index = int(last_row_list[0]) + 1
-            else:
-                index = 0
 
             self.get_qr_id.emit() # Get QR ID
 
-            new_row = pd.DataFrame([{'Index': f'{index}', 'ParallelismVal': f'{self.parallelism_value}', 'Grade': f"{'PASS' if float(self.parallelism_value) < 0.03 else 'FAIL'}", 'PlatformID': f'{self.identifier}'}])
+            new_row = pd.DataFrame([{'Date': f'{date}',
+                                     'PlatformID': f'{PlatformID}',
+                                     'Grade': f"{grade}", 
+                                     'MaxMin': f'{MaxMin}',
+                                     'P0': f'{point_data["P0"]}',
+                                     'P1': f'{point_data["P1"]}',
+                                     'P2': f'{point_data["P2"]}',
+                                     'P3': f'{point_data["P3"]}',
+                                     'P4': f'{point_data["P4"]}',
+                                     'P5': f'{point_data["P5"]}',
+                                     'P6': f'{point_data["P6"]}',
+                                     'P7': f'{point_data["P7"]}',
+                                     'P8': f'{point_data["P8"]}'}])
             file = pd.concat([file, new_row], ignore_index=True)
             file.to_csv(DATA_FILE, index=False)
         else:
             print("File does not exist")
 
-        post_url = \
-            f"{URL}?" \
-            f"{data_points_key}=" \
-            f"{str(self.data['0'])}," \
-            f"{str(self.data['1'])}," \
-            f"{str(self.data['2'])}," \
-            f"{str(self.data['3'])}," \
-            f"{str(self.data['4'])}," \
-            f"{str(self.data['5'])}," \
-            f"{str(self.data['6'])}," \
-            f"{str(self.data['7'])}," \
-            f"{str(self.data['8'])}&" \
-            f"{parallelism_value_key}=" \
-            f"{str(self.parallelism_value)}"
+        post_json_data = {
+            "date": f'{date}',
+            "platform_id": f'{self.identifier}',
+            "grade": grade,
+            "maxmin": f'{MaxMin}',
+            "data_points": point_data
+        }
+        # post(post_url, json=post_json_data)
 
-        post(post_url)
+        # post_url = \
+        #     f"{URL}?" \
+        #     f"{data_points_key}=" \
+        #     f"{str(self.data['0'])}," \
+        #     f"{str(self.data['1'])}," \
+        #     f"{str(self.data['2'])}," \
+        #     f"{str(self.data['3'])}," \
+        #     f"{str(self.data['4'])}," \
+        #     f"{str(self.data['5'])}," \
+        #     f"{str(self.data['6'])}," \
+        #     f"{str(self.data['7'])}," \
+        #     f"{str(self.data['8'])}&" \
+        #     f"{parallelism_value_key}=" \
+        #     f"{str(self.parallelism_value)}"
+
+        # post(post_url)
 
         
     def terminate_threads(self):
