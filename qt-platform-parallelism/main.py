@@ -133,10 +133,9 @@ class MainWindow(QMainWindow):
         self.qr_scanner_thread = QThread()
         # self.qr_scanner_thread.setParent(self)
 
-        self.ui.button_connect_scanner.clicked.connect(self.qr_scanner.find_scanner)
+        self.ui.button_connect_scanner.clicked.connect(self.qr_scanner.read_qr)
         self.qr_scanner.qr_identifier.connect(self.show_identifier)
 
-        # self.qr_scanner_thread.started.connect(self.qr_scanner.scanner_connect)
         self.qr_scanner.moveToThread(self.qr_scanner_thread)
 
         # Signals

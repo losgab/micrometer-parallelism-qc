@@ -24,15 +24,24 @@ class QRScanner(QObject):
         super().__init__(parent)
         # self.find_scanner()
 
-    def find_scanner(self):
+    def find_scanner(self) -> str: # CONNECTED TO CONNECT SCANNER BUTTON
         # Target the right port
         if self.scanner != None:
             self.scanner.close()
 
         ports = QSerialPortInfo.availablePorts()
+
+        # No available ports to browse
+        if len(ports) == 0:
+            print("No ports to scan")
+            self.qr_identifier.emit("No Scanner Connected")
+            return None
+
+        # Browse ports
         for port in ports:
+            # Skip ports that we are sure are not the scanner
             if port.description() not in ["USB Serial Device", "USB Single Serial", "USBKey Module"]:
-                print(f"Skippedd port: {port.portName()} - {port.description()}")
+                print(f"Skipped port: {port.portName()} - {port.description()}")
                 continue
 
             print(f"Scanning port: {port.portName()} - {port.description()} (Total ports: {len(ports)})")
@@ -46,86 +55,126 @@ class QRScanner(QObject):
 
             # Check if port has been opened
             if not temp_port.isOpen():
-                print("Failed to open port")
+                print(f"Failed to open port: Error {temp_port.error()}")
                 temp_port.close()
                 continue
 
+            # Send command to identify scanner once opened
             temp_port.write(scanner_identify_command)
 
+            # Wait and read response
+            data = []
             if temp_port.waitForReadyRead(100):  # Wait for up to 1000 ms
                 data = list(temp_port.readAll().data())
                 data = [hex(byte) for byte in data]
-
-                if self.is_scanner(data):
-                    temp_port.close()
-                    print("Scanner Found!")
-                    self.qr_port_name = port.portName()
-                    self.configure_scanner()
-                    return True
             else:
-                print("Timeout waiting for data. Not scanner")
-
+                print("Timeout waiting for data.")
+            
             temp_port.close()
 
-        print("Scanner not found")
-        self.qr_identifier.emit("No Scanner Connected")
-        return False
+            # Check response for scanner
+            if self.is_scanner(data):
+                print("Scanner Found!")
+                return port.portName()
 
-    def is_scanner(self, data) -> bool:
+        # No scanners found
+        return None
+
+    def is_scanner(self, data: list) -> bool:
         return data == ['0x2', '0x0', '0x0', '0x1', '0x2', '0x13', '0x73']
+    
+    def connect_scanner(self) -> bool:
+        # Find scanner if not connected
+        if self.qr_port_name is None:
+            self.qr_port_name = self.find_scanner()
 
-    def configure_scanner(self):
-        self.scanner = QSerialPort()
-        self.scanner.setPortName(self.qr_port_name)
-        self.scanner.setBaudRate(QSerialPort.Baud9600, QSerialPort.AllDirections)
-        self.scanner.setDataBits(QSerialPort.Data8)
-        self.scanner.setParity(QSerialPort.NoParity)
-        self.scanner.setStopBits(QSerialPort.OneStop)
-        self.scanner.open(QSerialPort.ReadWrite)
+            # No scanner found
+            if self.qr_port_name is None:
+                self.qr_identifier.emit("No Scanner Connected")
+                return False
+            
+            # Scanner found, open a new connection to it
+            self.scanner = QSerialPort()
+            self.scanner.setPortName(self.qr_port_name)
+            self.scanner.setBaudRate(QSerialPort.Baud9600, QSerialPort.AllDirections)
+            self.scanner.setDataBits(QSerialPort.Data8)
+            self.scanner.setParity(QSerialPort.NoParity)
+            self.scanner.setStopBits(QSerialPort.OneStop)
+            self.scanner.open(QSerialPort.ReadWrite)
 
-        if self.scanner.isOpen():
-            self.qr_identifier.emit("Scanner Connected")
-        else:
-            self.qr_identifier.emit("Scanner not connected")
+            return True
+
+        else: # Scanner already connected, get a scan
+            self.read_qr()
+            return True
 
     # Trigger scan and report back data
-    def read_qr(self): # CONNECTED TO SIGNAL get_qr_id
-        if self.scanner is None or self.qr_port_name is None:
-            self.find_scanner()
+    def read_qr(self) -> bool: # CONNECTED TO SIGNAL get_qr_id
+        if self.qr_port_name is None:
+            connected = self.connect_scanner()
 
-        if self.scanner is None or self.qr_port_name is None:
-            self.qr_identifier.emit("No Scanner Connected")
-            return
+            if not connected:
+                self.qr_identifier.emit("Scanner Not Connected")
+                return False
 
-        self.scanner.write(trigger_command)
+        # Verify scanner before doing anything
+        if not self.trigger_scanner():
+            print("Scanner Not Triggered. Attempting to reconnect...")
 
-        if self.scanner.waitForReadyRead(200):  # Wait for up to 1000 ms
-            data = list(self.scanner.readAll().data())
-            data = [hex(byte) for byte in data]
-            if data != ['0x2', '0x0', '0x0', '0x1', '0x0', '0x33', '0x31']:
-                print("Trigger command not confirmed!")
-                self.qr_identifier.emit("Scanner ERROR 1")
-                return
-        else:
-            print("Timeout waiting for trigger confirmation, closing port. No scanner connected.")
-            self.scanner.close()
-            self.scanner = None
-            self.qr_port_name = None
-            self.qr_identifier.emit("No Scanner Connected") # No response from scanner
-            return
+            # Attempt to reconnect
+            connected = self.connect_scanner()
 
+            if not connected:
+                self.qr_identifier.emit("Scanner Not Connected")
+                return False
+
+            print("Scanner Reconnected")
+            self.trigger_scanner()
+
+        # Scan and read back data
         if self.scanner.waitForReadyRead(2000):  # Wait for up to 1000 ms
             data = list(self.scanner.readAll().data())
             data = [hex(byte) for byte in data]
+
+            # Send data on signal
             ascii_string = ''.join([chr(int(h, 16)) for h in data])
             self.qr_identifier.emit(ascii_string)
+
+            return True
         else:
             print("Timeout waiting for data. No QR code found")
             self.qr_identifier.emit("No QR code found") # No response from scanner
+
+            return False
         
     def finish_all(self):
         if self.scanner is not None:
             self.scanner.close()
         self.finished.emit()
 
+    def trigger_scanner(self) -> bool:
+        if self.scanner is None or self.qr_port_name is None:
+            return False
 
+        # Send trigger command and wait for confirm response
+        self.scanner.write(trigger_command)
+        
+        data = []
+        if self.scanner.waitForReadyRead(200):  # Wait for up to 1000 ms
+            data = list(self.scanner.readAll().data())
+            data = [hex(byte) for byte in data]
+        else:
+            print("No trigger confirm, closing port. No scanner connected.")
+            self.scanner.close()
+            self.scanner = self.qr_port_name = None
+            self.qr_identifier.emit("No Scanner Connected") # No response from scanner
+            return False
+        
+        # Check if trigger command was confirmed
+        success = self.is_trigger_confirm(data)
+        print("Scan trigger confirm" if success else "Trigger confirm failed.")
+        
+        return success
+
+    def is_trigger_confirm(self, ret_data: list) -> bool:
+        return ret_data == ['0x2', '0x0', '0x0', '0x1', '0x0', '0x33', '0x31']
