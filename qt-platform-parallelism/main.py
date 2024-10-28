@@ -71,6 +71,7 @@ class MainWindow(QMainWindow):
         self.portCurrent = None
 
     def init_buttons(self):
+        # self.ui.button_test.clicked.connect(self.save_data)
         self.ui.button_test.clicked.connect(self.grade_part)
         self.ui.button_clear.clicked.connect(self.clear)
 
@@ -324,13 +325,13 @@ class MainWindow(QMainWindow):
                     self.ui.data9.setText(value)
 
     def save_data(self):
-        # if self.parallelism_value == None:
-        #     self.ui.parallelism_data.setText("No Parallelism Data")
-        #     return
+        if self.parallelism_value == None:
+            self.ui.parallelism_data.setText("No Parallelism Data")
+            return
 
-        # if self.identifier == None:
-        #     self.ui.identifier_data.setText("No Identifier Data")
-        #     return
+        if self.identifier == None:
+            self.ui.identifier_data.setText("No Identifier Data")
+            return
         date = datetime.now().strftime("%H:%M - %d/%m/%Y")
         PlatformID = self.ui.identifier_data.text()
         grade = self.ui.grade_data.text()
