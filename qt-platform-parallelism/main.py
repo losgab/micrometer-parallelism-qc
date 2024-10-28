@@ -332,6 +332,7 @@ class MainWindow(QMainWindow):
         if self.identifier == None:
             self.ui.identifier_data.setText("No Identifier Data")
             return
+        self.get_qr_id.emit() # Get QR ID
         date = datetime.now().strftime("%H:%M - %d/%m/%Y")
         PlatformID = self.ui.identifier_data.text()
         grade = self.ui.grade_data.text()
@@ -351,7 +352,6 @@ class MainWindow(QMainWindow):
         if path.isfile(DATA_FILE):
             file = pd.read_csv(DATA_FILE)
 
-            self.get_qr_id.emit() # Get QR ID
 
             new_row = pd.DataFrame([{'Date': f'{date}',
                                      'PlatformID': f'{PlatformID}',
