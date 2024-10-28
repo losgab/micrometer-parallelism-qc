@@ -188,7 +188,7 @@ class MainWindow(QMainWindow):
         self.highlight_points([max_index, min_index])
 
         self.get_qr_id.emit()
-        
+
         # Reset
         self.ui.button_test.setText("TEST PLATFORM")
 
@@ -335,7 +335,7 @@ class MainWindow(QMainWindow):
             return
         # self.get_qr_id.emit() # Get QR ID
         date = datetime.now().strftime("%H:%M - %d/%m/%Y")
-        PlatformID = self.ui.identifier_data.text()
+        PlatformID = self.ui.identifier_data.text().strip()
         grade = self.ui.grade_data.text()
         MaxMin = self.ui.parallelism_data.text()
         point_data = {
