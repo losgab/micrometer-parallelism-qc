@@ -376,7 +376,7 @@ class Ui_MainWindow(object):
         self.button_clear = QPushButton(self.centralwidget)
         self.button_clear.setObjectName(u"button_clear")
         self.button_clear.setMinimumSize(QSize(80, 50))
-        self.button_clear.setMaximumSize(QSize(80, 40))
+        self.button_clear.setMaximumSize(QSize(1000, 40))
         self.button_clear.setFont(font3)
 
         self.horizontalLayout_6.addWidget(self.button_clear)
@@ -384,20 +384,11 @@ class Ui_MainWindow(object):
         self.button_connect_scanner = QPushButton(self.centralwidget)
         self.button_connect_scanner.setObjectName(u"button_connect_scanner")
         self.button_connect_scanner.setMinimumSize(QSize(100, 50))
-        self.button_connect_scanner.setMaximumSize(QSize(250, 40))
+        self.button_connect_scanner.setMaximumSize(QSize(1000, 40))
         self.button_connect_scanner.setFont(font3)
         self.button_connect_scanner.setAutoDefault(False)
 
         self.horizontalLayout_6.addWidget(self.button_connect_scanner)
-
-        self.button_save = QPushButton(self.centralwidget)
-        self.button_save.setObjectName(u"button_save")
-        self.button_save.setMinimumSize(QSize(80, 50))
-        self.button_save.setMaximumSize(QSize(80, 40))
-        self.button_save.setFont(font3)
-        self.button_save.setAutoDefault(False)
-
-        self.horizontalLayout_6.addWidget(self.button_save)
 
 
         self.verticalLayout_3.addLayout(self.horizontalLayout_6)
@@ -450,6 +441,5 @@ class Ui_MainWindow(object):
         self.identifier_data.setText(QCoreApplication.translate("MainWindow", u"-", None))
         self.button_clear.setText(QCoreApplication.translate("MainWindow", u"CLEAR", None))
         self.button_connect_scanner.setText(QCoreApplication.translate("MainWindow", u"SCAN", None))
-        self.button_save.setText(QCoreApplication.translate("MainWindow", u"SAVE", None))
     # retranslateUi
 

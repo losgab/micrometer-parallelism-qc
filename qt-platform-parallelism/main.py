@@ -73,7 +73,6 @@ class MainWindow(QMainWindow):
     def init_buttons(self):
         self.ui.button_test.clicked.connect(self.grade_part)
         self.ui.button_clear.clicked.connect(self.clear)
-        self.ui.button_save.clicked.connect(self.save_data)
 
     def show_bias(self):
         self.ui.data1_bias.setTitle(f"{BIAS_BACK_ROW}")
@@ -187,6 +186,9 @@ class MainWindow(QMainWindow):
         max_index = float_data.index(max(float_data))
         min_index = float_data.index(min(float_data))
         self.highlight_points([max_index, min_index])
+
+        # Save the data locally
+        self.save_data()
 
         # Reset
         self.ui.button_test.setText("TEST PLATFORM")
