@@ -17,6 +17,8 @@ BIAS_BACK_ROW = 0.000 # Indicators 0, 1, 2
 BIAS_MIDDLE_ROW = 0.001 # Indicators 3, 4, 5
 BIAS_FRONT_ROW = 0.002 # Indicators 6, 7, 8
 
+PASS_CRITERIA = 0.035
+
 # Important:
 # You need to run the following command to generate the ui_form.py file
 #     pyside6-uic form.ui -o ui_form.py
@@ -174,7 +176,7 @@ class MainWindow(QMainWindow):
 
         self.ui.parallelism_data.setText(self.parallelism_value)
 
-        if (max_min <= 0.035):
+        if (max_min <= PASS_CRITERIA):
             self.ui.grade_data.setText("PASS")
             self.ui.grade_data.setStyleSheet("background: green")
         else:
@@ -342,8 +344,6 @@ class MainWindow(QMainWindow):
             "P7": "-",
             "P8": "-"
         } if self.data == {} else self.data
-        # grade = "PASS" if round(float(self.parallelism_value), 3) < 0.035 else "FAIL"
-        # MaxMin = f"{round(float(self.parallelism_value), 3)}"
 
         if path.isfile(DATA_FILE):
             file = pd.read_csv(DATA_FILE)
