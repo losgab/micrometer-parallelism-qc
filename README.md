@@ -32,16 +32,16 @@ Hosts ESP32-S3 MCU board, selects and gets data from all dial indicators, forwar
 
 
 ### GPIO pin assignments
-|    GPIO    |                 Detail                 |      IO Type       |
-| :--------: | :------------------------------------: | :----------------: |
-|   17, 16   |              UART 1 TX/RX              |    OUTPUT/INPUT    |
-|   36, 35   |              UART 2 TX/RX              |    OUTPUT/INPUT    |
-| 13, 14, 15 | SELECT lines for MUX board 1 (A, B, C) |       OUTPUT       |
-| 18, 33, 34 | SELECT lines for MUX board 2 (A, B, C) |       OUTPUT       |
-|     11     |        Electromagnet button pin        | INPUTB |
-|     12     |         Electromagnet LED pin          |       OUTPUT       |
-|   37, 38   |      Electromagnet control (F, R)      |       OUTPUT       |
-|   10, 9    |        LED strip data in (1, 2)        |       OUTPUT       |
+|    GPIO    |                 Detail                 |   IO Type    |
+| :--------: | :------------------------------------: | :----------: |
+|   17, 16   |              UART 1 TX/RX              | OUTPUT/INPUT |
+|   36, 35   |              UART 2 TX/RX              | OUTPUT/INPUT |
+| 13, 14, 15 | SELECT lines for MUX board 1 (A, B, C) |    OUTPUT    |
+| 18, 33, 34 | SELECT lines for MUX board 2 (A, B, C) |    OUTPUT    |
+|     11     |        Electromagnet button pin        |    INPUTB    |
+|     12     |         Electromagnet LED pin          |    OUTPUT    |
+|   37, 38   |      Electromagnet control (F, R)      |    OUTPUT    |
+|   10, 9    |        LED strip data in (1, 2)        |    OUTPUT    |
 ___
 ## MUX board (PN07646)
 ![MUX board](img/PN07646.png)
@@ -106,3 +106,32 @@ Supplies 5V power via USB-C cable to Raspberry Pi 4, Minifit Molex to MUX boards
 
 - Schematic -> PN07664 EasyEDA design files/
 - PCB design -> PN07664 EasyEDA design files/
+
+### Components
+|   Ref    |                                 Part                                 |                   Note                   |
+| :------: | :------------------------------------------------------------------: | :--------------------------------------: |
+|    U1    |       [BD6231F-E2](https://www.digikey.com.au/short/rnv2cvt2)        |    Motor Driver IC for electromagnet     |
+|    U2    |               Generic 2.1mm DC barrel jack receptacle                |                 Power In                 |
+|    U3    |     [LM2585S-12/NOPB](https://www.digikey.com.au/short/58dfmd8b)     |    Fixed 12V Boost buck converter IC     |
+|    U4    |  [ASPI-0630LR-150M-T15](https://www.digikey.com.au/short/b3nn4mmf)   |       Boost buck inductor 15uH 3A        |
+|   SW1    |      [300SP1J3VS2QE](https://www.digikey.com.au/short/b223whj2)      |        SWITCH ROCKER SPDT 5A 120V        |
+|  R4, R7  |                    Generic 1206 120 Ohm Resistor                     |              LED resistors               |
+|   LED1   |                     Generic 20mA Green 0603 LED                      |               5V power LED               |
+|   LED2   |                      Generic 20mA Red 0603 LED                       |               5V power LED               |
+|  POWER1  |      [S4B-PH-SM4-TB](https://www.digikey.com.au/short/mfrmz3ch)      | 4-pin JST-SPH right angle SMD receptacle |
+|  X1, X2  | [MOLEX MINI-FIT JR_2P_2R](https://www.digikey.com.au/short/5jq5b59m) |  MOLEX MINI-FIT JR_2P_2R - RIGHT ANGLE   |
+|    C1    |               Generic 0603 16V 0.1uF ceramic capacitor               |          Decoupling capacitors           |
+|    C2    |               Generic 1206 16V 100uF Ceramic capacitor               |                 Buffers                  |
+|    C3    |              Generic 1206 16V 0.47uF Ceramic capacitor               |                                          |
+|    C4    |      [EEEFK1V152AM](https://www.digikey.com.au/short/n99d3hvm)       |              Boost buck cap              |
+|    D1    |         [1N5820G](https://www.digikey.com.au/short/c3c8384v)         |       Schottky Diode 20V 3A Axial        |
+|    R6    |                     Generic 1206 3K Ohm Resistor                     |           Boost buck resistor            |
+|   PTC1   |      [0ZCJ0050AF2E](https://www.digikey.com.au/short/rwpct024)       |        Boost buck resettable fuse        |
+|   C17    |               Generic 0603 16V 10uF Ceramic capacitor                |                 Buffers                  |
+|   C18    |               Generic 0603 16V 220nF Ceramic capacitor               |                Decoupling                |
+| C19, C20 |               Generic 0603 16V 220pF Ceramic capacitor               |                 Buffers                  |
+|  R1, R2  |                     Generic 1206 1K Ohm Resistor                     |             Power Reduction              |
+|   LED3   |      [XZMDKDGK55W-4](https://www.digikey.com.au/short/w8tf8w9b)      |            Bidirectional LED             |
+|    R3    |                    Generic 1206 300 Ohm Resistor                     |        Bidirectional LED resistor        |
+|   USB1   |      [USB4125-GF-A](https://www.digikey.com.au/short/vfnb38qt)       |           USB-C 2.0 Receptacle           |
+|    U5    |      [S3B-PH-SM4-TB](https://www.digikey.com.au/short/nqz35qvr)      |   3-way SPH right angle SMD receptacle   |
