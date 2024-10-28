@@ -154,7 +154,6 @@ class MainWindow(QMainWindow):
     def grade_part(self):
         self.clear()
         self.ui.button_test.setText("...")
-        self.get_qr_id.emit()
 
         if self.ui.serialport_select1.currentText() == "No Device Selected":
             self.ui.grade_data.setText("No Device")
@@ -188,6 +187,8 @@ class MainWindow(QMainWindow):
         min_index = float_data.index(min(float_data))
         self.highlight_points([max_index, min_index])
 
+        self.get_qr_id.emit()
+        
         # Reset
         self.ui.button_test.setText("TEST PLATFORM")
 
