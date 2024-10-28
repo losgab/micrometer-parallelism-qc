@@ -188,15 +188,15 @@ class MainWindow(QMainWindow):
         min_index = float_data.index(min(float_data))
         self.highlight_points([max_index, min_index])
 
-        # Save the data locally
-        self.save_data()
-
         # Reset
         self.ui.button_test.setText("TEST PLATFORM")
 
     def show_identifier(self, qr_code_text):
         self.ui.identifier_data.setText(str(qr_code_text))
         self.identifier = qr_code_text
+
+        # Save the data locally
+        self.save_data()
 
     def highlight_points(self, points):
         for point in points:
