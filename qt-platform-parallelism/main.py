@@ -357,15 +357,15 @@ class MainWindow(QMainWindow):
                                      'PlatformID': f'{PlatformID}',
                                      'Grade': f"{grade}", 
                                      'MaxMin': f'{MaxMin}',
-                                     'P0': f'{point_data["P0"]}',
-                                     'P1': f'{point_data["P1"]}',
-                                     'P2': f'{point_data["P2"]}',
-                                     'P3': f'{point_data["P3"]}',
-                                     'P4': f'{point_data["P4"]}',
-                                     'P5': f'{point_data["P5"]}',
-                                     'P6': f'{point_data["P6"]}',
-                                     'P7': f'{point_data["P7"]}',
-                                     'P8': f'{point_data["P8"]}'}])
+                                     'P0': f'{point_data["0"]}',
+                                     'P1': f'{point_data["1"]}',
+                                     'P2': f'{point_data["2"]}',
+                                     'P3': f'{point_data["3"]}',
+                                     'P4': f'{point_data["4"]}',
+                                     'P5': f'{point_data["5"]}',
+                                     'P6': f'{point_data["6"]}',
+                                     'P7': f'{point_data["7"]}',
+                                     'P8': f'{point_data["8"]}'}])
             file = pd.concat([file, new_row], ignore_index=True)
             file.to_csv(DATA_FILE, index=False)
         else:
