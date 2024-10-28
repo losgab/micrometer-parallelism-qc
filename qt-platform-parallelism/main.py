@@ -332,7 +332,7 @@ class MainWindow(QMainWindow):
         if self.identifier == None:
             self.ui.identifier_data.setText("No Identifier Data")
             return
-        self.get_qr_id.emit() # Get QR ID
+        # self.get_qr_id.emit() # Get QR ID
         date = datetime.now().strftime("%H:%M - %d/%m/%Y")
         PlatformID = self.ui.identifier_data.text()
         grade = self.ui.grade_data.text()
