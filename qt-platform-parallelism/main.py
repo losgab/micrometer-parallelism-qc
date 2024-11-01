@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtCore import QThread, Signal
 from PySide6.QtCore import Qt
 
-URL = "https://script.google.com/macros/s/AKfycbx6wPNqYTieuuD5W6441Im1kWIoejl3Oze2mHHC07Wy18FoQr_Y1vQ4vJ_qXpdOeL0jYw/exec"
+URL = "https://script.google.com/macros/s/AKfycbyP0KyCSufIU9aaTlR6sq0omZcJPRN6nXPFptffz0lXFdkcbhAyth7RoCBi0nY0gm_ItA/exec"
 data_points_key = "p"
 parallelism_value_key = "parallelismValue"
 
@@ -117,10 +117,6 @@ class MainWindow(QMainWindow):
 
         # Connect New Serial Port signal to handler in class
         self.new_serial_port_name.connect(self.data_getter.newSerialPort)
-        # self.data_thread.started.connect(self.data_getter.getData)
-
-        # Process data received signal
-        # self.data_getter.dataOut.connect(self.parallelism_checker.receive)
 
         # Termination Signals
         self.data_getter.finished.connect(self.data_thread.quit) # When getter is finished, tell thread to quit
@@ -246,7 +242,6 @@ class MainWindow(QMainWindow):
     # SELECT SERIAL PORT
     def serialPort1Selected(self, portName):
         if portName == "No Device Selected":
-            # print("No port selected")
             self.ui.data1.setText("No Data")
             self.ui.data2.setText("No Data")
             self.ui.data3.setText("No Data")
@@ -261,8 +256,6 @@ class MainWindow(QMainWindow):
             self.portCurrent = None
             return
 
-        # Get raw port name from selection
-        # print(portName)
         portName = portName.split(' ')[0]
         for char in ('[', ']'):
             portName = portName.replace(char, '')
@@ -270,16 +263,8 @@ class MainWindow(QMainWindow):
         # Gets the currently selected port
  
         if self.portCurrent != portName:
-            # print(f"New Port: {self.portCurrent} -> {portName}")
-
-            # if self.portCurrent is not None:
-            #     self.data_getter.finish()
-
             self.portCurrent = portName
-            # self.init_data_getter()
             self.new_serial_port_name.emit(portName)
-            
-            # print(f"Thread started for port: {str(self.ui.serialport_select1.currentText())}")
 
     # Display received values
     def display_values(self, data):
@@ -374,30 +359,13 @@ class MainWindow(QMainWindow):
 
         post_json_data = {
             "date": f'{date}',
-            "platform_id": f'{self.identifier}',
+            "platform_id": f'{PlatformID}',
             "grade": grade,
             "maxmin": f'{MaxMin}',
             "data_points": point_data
         }
-        # post(post_url, json=post_json_data)
 
-        # post_url = \
-        #     f"{URL}?" \
-        #     f"{data_points_key}=" \
-        #     f"{str(self.data['0'])}," \
-        #     f"{str(self.data['1'])}," \
-        #     f"{str(self.data['2'])}," \
-        #     f"{str(self.data['3'])}," \
-        #     f"{str(self.data['4'])}," \
-        #     f"{str(self.data['5'])}," \
-        #     f"{str(self.data['6'])}," \
-        #     f"{str(self.data['7'])}," \
-        #     f"{str(self.data['8'])}&" \
-        #     f"{parallelism_value_key}=" \
-        #     f"{str(self.parallelism_value)}"
-
-        # post(post_url)
-
+        post(URL, json=post_json_data)
         
     def terminate_threads(self):
         if self.serport_thread.isRunning():

@@ -22,7 +22,6 @@ class QRScanner(QObject):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        # self.find_scanner()
 
     def find_scanner(self) -> str: # CONNECTED TO CONNECT SCANNER BUTTON
         # Target the right port
