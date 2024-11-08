@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtCore import QThread, Signal
 from PySide6.QtCore import Qt
 
-URL = "https://script.google.com/macros/s/AKfycbyP0KyCSufIU9aaTlR6sq0omZcJPRN6nXPFptffz0lXFdkcbhAyth7RoCBi0nY0gm_ItA/exec"
+URL = "https://script.google.com/macros/s/AKfycbyOapKShJNq7BIJdDrvjyBaXlBAjcYsJSXGPVbliPwVf3uTG_GlHYu8HVo-wnvEFEm-Dg/exec"
 data_points_key = "p"
 parallelism_value_key = "parallelismValue"
 
@@ -324,15 +324,15 @@ class MainWindow(QMainWindow):
         grade = self.ui.grade_data.text()
         MaxMin = self.ui.parallelism_data.text()
         point_data = {
-            "P0": "-",
-            "P1": "-",
-            "P2": "-",
-            "P3": "-",
-            "P4": "-",
-            "P5": "-",
-            "P6": "-",
-            "P7": "-",
-            "P8": "-"
+            "0": "-",
+            "1": "-",
+            "2": "-",
+            "3": "-",
+            "4": "-",
+            "5": "-",
+            "6": "-",
+            "7": "-",
+            "8": "-"
         } if self.data == {} else self.data
 
         if path.isfile(DATA_FILE):
