@@ -32,7 +32,7 @@ DATA_FILE = "data.csv"
 class MainWindow(QMainWindow):
     get_qr_id = Signal()
 
-    new_serial_port_name = Signal(str)
+    connect_to_data_serial_port = Signal()
     
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -52,15 +52,17 @@ class MainWindow(QMainWindow):
         self.serport_getter = self.serport_thread = None
         self.data_getter = self.data_thread = None
 
+        self.data_port = None
+
         self.qr_scanner = self.qr_scanner_thread = None
         self.init_buttons() # Test & Save buttons
         self.init_qr_scanner()
         self.init_serport_getter()
         self.init_data_getter()
 
-        self.ui.serialport_select1.addItem("No Device Selected")
-        self.portgroup1 = 1
-        self.ui.serialport_select1.currentTextChanged.connect(self.serialPort1Selected)
+        # self.ui.serialport_select1.addItem("No Device Selected")
+        # self.portgroup1 = 1
+        # self.ui.serialport_select1.currentTextChanged.connect(self.serialPort1Selected)
         
         self.parallelism_value = self.identifier = None
         
@@ -86,11 +88,15 @@ class MainWindow(QMainWindow):
         self.ui.data8_bias.setTitle(f"{BIAS_FRONT_ROW}")
         self.ui.data9_bias.setTitle(f"{BIAS_FRONT_ROW}")
 
+    def new_serial_port_connected(self, dataPortName):
+        self.data_port = dataPortName
+        self.ui.serial_handler_output.setText(dataPortName)
+
     # Initialise getting SERIAL PORTS
     def init_serport_getter(self):
         self.serport_getter = SerialPortGetter() # Serial port worker
         self.serport_thread = QThread() # Port Getter Thread
-        self.serport_thread.setParent(self)
+        # self.serport_thread.setParent(self)
 
         self.serport_getter.moveToThread(self.serport_thread)
 
@@ -98,7 +104,7 @@ class MainWindow(QMainWindow):
         self.serport_thread.started.connect(self.serport_getter.getPorts)
 
         # Serve serial ports signal
-        self.serport_getter.dataOut.connect(self.serveSerialPorts) # Connect data signal to receiver function
+        # self.serport_getter.dataOut.connect(self.serveSerialPorts) # Connect data signal to receiver function
         
         # Termination Signals
         self.serport_getter.finished.connect(self.serport_thread.quit) # When getter is finished, tell thread to quit
@@ -115,8 +121,9 @@ class MainWindow(QMainWindow):
 
         self.data_getter.moveToThread(self.data_thread)
 
-        # Connect New Serial Port signal to handler in class
-        self.new_serial_port_name.connect(self.data_getter.newSerialPort)
+        # Connect signals
+        self.connect_to_data_serial_port.connect(self.data_getter.findESP32S3Port)
+        self.data_getter.new_serial_port_name.connect(self.new_serial_port_connected)
 
         # Termination Signals
         self.data_getter.finished.connect(self.data_thread.quit) # When getter is finished, tell thread to quit
@@ -125,6 +132,9 @@ class MainWindow(QMainWindow):
         self.data_getter.finished.connect(self.data_getter.deleteLater) # When getter is finished, signal getter cleanup
         self.data_getter.dataOut.connect(self.display_values)
         self.data_thread.start()
+
+        # Give command to connect to ESP32
+        self.connect_to_data_serial_port.emit()
 
     # Initialise QR Scanner
     def init_qr_scanner(self):
@@ -151,7 +161,12 @@ class MainWindow(QMainWindow):
         self.clear()
         self.ui.button_test.setText("...")
 
-        if self.ui.serialport_select1.currentText() == "No Device Selected":
+        # if self.ui.serialport_select1.currentText() == "No Device":
+        #     self.ui.grade_data.setText("No Device")
+        #     self.ui.parallelism_data.setText("No Device")
+        #     self.ui.button_test.setText("TEST PLATFORM")
+        #     return
+        if self.data_port == "No Device":
             self.ui.grade_data.setText("No Device")
             self.ui.parallelism_data.setText("No Device")
             self.ui.button_test.setText("TEST PLATFORM")
@@ -232,12 +247,12 @@ class MainWindow(QMainWindow):
         self.ui.data9.setStyleSheet("")
         self.ui.grade_data.setStyleSheet("")
 
-    # SHOW SERIAL PORTS
-    def serveSerialPorts(self, data):
-        for port in data:
-            if self.ui.serialport_select1.findText(str(port.description()), Qt.MatchContains) == -1:
-                self.ui.serialport_select1.addItem(f"[{port.portName()}] {port.description()}")
-                self.portgroup1 += 1
+    # # SHOW SERIAL PORTS
+    # def serveSerialPorts(self, data):
+    #     for port in data:
+    #         if self.ui.serialport_select1.findText(str(port.description()), Qt.MatchContains) == -1:
+    #             self.ui.serialport_select1.addItem(f"[{port.portName()}] {port.description()}")
+    #             self.portgroup1 += 1
 
     # SELECT SERIAL PORT
     def serialPort1Selected(self, portName):

@@ -15,10 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QFrame, QGridLayout,
-    QGroupBox, QHBoxLayout, QLabel, QLayout,
-    QMainWindow, QPushButton, QSizePolicy, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QFrame, QGridLayout, QGroupBox,
+    QHBoxLayout, QLabel, QLayout, QMainWindow,
+    QPushButton, QSizePolicy, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -298,15 +297,14 @@ class Ui_MainWindow(object):
         self.serialport_title1.setMaximumSize(QSize(16777215, 80))
         self.gridLayout_2 = QGridLayout(self.serialport_title1)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
-        self.serialport_select1 = QComboBox(self.serialport_title1)
-        self.serialport_select1.setObjectName(u"serialport_select1")
-        self.serialport_select1.setMaximumSize(QSize(3000, 16777215))
+        self.serial_handler_output = QLabel(self.serialport_title1)
+        self.serial_handler_output.setObjectName(u"serial_handler_output")
         font2 = QFont()
-        font2.setFamilies([u"Calibri Light"])
-        font2.setPointSize(12)
-        self.serialport_select1.setFont(font2)
+        font2.setPointSize(20)
+        self.serial_handler_output.setFont(font2)
+        self.serial_handler_output.setAlignment(Qt.AlignCenter)
 
-        self.gridLayout_2.addWidget(self.serialport_select1, 0, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.serial_handler_output, 0, 0, 1, 1)
 
 
         self.verticalLayout_3.addWidget(self.serialport_title1)
@@ -331,9 +329,7 @@ class Ui_MainWindow(object):
         self.gridLayout_4.setObjectName(u"gridLayout_4")
         self.grade_data = QLabel(self.grade)
         self.grade_data.setObjectName(u"grade_data")
-        font4 = QFont()
-        font4.setPointSize(20)
-        self.grade_data.setFont(font4)
+        self.grade_data.setFont(font2)
         self.grade_data.setAlignment(Qt.AlignCenter)
 
         self.gridLayout_4.addWidget(self.grade_data, 0, 0, 1, 1)
@@ -348,7 +344,7 @@ class Ui_MainWindow(object):
         self.gridLayout.setObjectName(u"gridLayout")
         self.parallelism_data = QLabel(self.parallelism)
         self.parallelism_data.setObjectName(u"parallelism_data")
-        self.parallelism_data.setFont(font4)
+        self.parallelism_data.setFont(font2)
         self.parallelism_data.setAlignment(Qt.AlignCenter)
 
         self.gridLayout.addWidget(self.parallelism_data, 0, 0, 1, 1)
@@ -363,7 +359,7 @@ class Ui_MainWindow(object):
         self.gridLayout_6.setObjectName(u"gridLayout_6")
         self.identifier_data = QLabel(self.identifier)
         self.identifier_data.setObjectName(u"identifier_data")
-        self.identifier_data.setFont(font4)
+        self.identifier_data.setFont(font2)
         self.identifier_data.setAlignment(Qt.AlignCenter)
 
         self.gridLayout_6.addWidget(self.identifier_data, 0, 0, 1, 1)
@@ -431,7 +427,8 @@ class Ui_MainWindow(object):
         self.data8.setText(QCoreApplication.translate("MainWindow", u"float", None))
         self.data9_bias.setTitle(QCoreApplication.translate("MainWindow", u"data9_bias", None))
         self.data9.setText(QCoreApplication.translate("MainWindow", u"float", None))
-        self.serialport_title1.setTitle(QCoreApplication.translate("MainWindow", u"Data Serial Port (CHOOSE: USB Single Serial)", None))
+        self.serialport_title1.setTitle(QCoreApplication.translate("MainWindow", u"Data Serial Port", None))
+        self.serial_handler_output.setText(QCoreApplication.translate("MainWindow", u"-", None))
         self.button_test.setText(QCoreApplication.translate("MainWindow", u"TEST PLATFORM", None))
         self.grade.setTitle(QCoreApplication.translate("MainWindow", u"Grade", None))
         self.grade_data.setText(QCoreApplication.translate("MainWindow", u"-", None))

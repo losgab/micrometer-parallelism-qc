@@ -43,6 +43,9 @@ class QRScanner(QObject):
                 print(f"Skipped port: {port.portName()} - {port.description()}")
                 continue
 
+            # Check if port is opened by another process, eliminates the data port from being scanned
+            print(port.isNull())
+
             print(f"Scanning port: {port.portName()} - {port.description()} (Total ports: {len(ports)})")
             temp_port = QSerialPort()
             temp_port.setPortName(port.portName())
@@ -51,7 +54,7 @@ class QRScanner(QObject):
             temp_port.setParity(QSerialPort.NoParity)
             temp_port.setStopBits(QSerialPort.OneStop)
             temp_port.open(QSerialPort.ReadWrite)
-
+            
             # Check if port has been opened
             if not temp_port.isOpen():
                 print(f"Failed to open port: Error {temp_port.error()}")
@@ -77,6 +80,7 @@ class QRScanner(QObject):
                 return port.portName()
 
         # No scanners found
+        print("No scanners found")
         return None
 
     def is_scanner(self, data: list) -> bool:
@@ -110,6 +114,7 @@ class QRScanner(QObject):
     # Trigger scan and report back data
     def read_qr(self) -> bool: # CONNECTED TO SIGNAL get_qr_id
         if self.qr_port_name is None:
+            print("No Scanner Connected, attempting to reconnect...")
             connected = self.connect_scanner()
 
             if not connected:
