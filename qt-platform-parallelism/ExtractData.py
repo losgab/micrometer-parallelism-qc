@@ -84,7 +84,7 @@ class DataGetter(QObject):
         # Browse ports
         for port in ports:
             # Only accept ports that we want
-            if port.description() in ["USB Single Serial", "USB-Enhanced-SERIAL CH343"] and port.manufacturer() == "wch.cn":
+            if port.description() in ["USB Single Serial", "USB-Enhanced-SERIAL CH343"]:
                 print(f"Serial Port Device Manufacturer: '{port.manufacturer()}'")
                 print(f"New Serial Port: {port.portName()}")
                 self.port.setPortName(port.portName())
