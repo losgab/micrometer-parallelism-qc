@@ -1,6 +1,7 @@
 from PySide6.QtSerialPort import QSerialPortInfo, QSerialPort
 from PySide6.QtCore import QObject, Signal, QByteArray, QTimer
 from time import sleep
+from typing import Tuple
 
 # Identification command
 
@@ -23,7 +24,7 @@ class QRScanner(QObject):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-    def find_scanner(self) -> str: # CONNECTED TO CONNECT SCANNER BUTTON
+    def find_scanner(self) -> Tuple[bool, str]: # CONNECTED TO CONNECT SCANNER BUTTON
         # Target the right port
         if self.scanner != None:
             self.scanner.close()
@@ -34,7 +35,7 @@ class QRScanner(QObject):
         if len(ports) == 0:
             print("No ports to scan")
             self.qr_identifier.emit("No Scanner Connected")
-            return None
+            return False, ""
 
         # Browse ports
         for port in ports:
@@ -44,7 +45,7 @@ class QRScanner(QObject):
                 continue
 
             # Check if port is opened by another process, eliminates the data port from being scanned
-            print(port.isNull())
+            # print(port.isNull())
 
             print(f"Scanning port: {port.portName()} - {port.description()} (Total ports: {len(ports)})")
             temp_port = QSerialPort()
@@ -77,11 +78,11 @@ class QRScanner(QObject):
             # Check response for scanner
             if self.is_scanner(data):
                 print("Scanner Found!")
-                return port.portName()
+                return True, port.portName()
 
         # No scanners found
-        print("No scanners found")
-        return None
+        print("No scanner found")
+        return False, ""
 
     def is_scanner(self, data: list) -> bool:
         return data == ['0x2', '0x0', '0x0', '0x1', '0x2', '0x13', '0x73']
@@ -89,11 +90,10 @@ class QRScanner(QObject):
     def connect_scanner(self) -> bool:
         # Find scanner if not connected
         if self.qr_port_name is None:
-            self.qr_port_name = self.find_scanner()
+            port_found, self.qr_port_name = self.find_scanner()
 
             # No scanner found
-            if self.qr_port_name is None:
-                self.qr_identifier.emit("No Scanner Connected")
+            if not port_found:
                 return False
             
             # Scanner found, open a new connection to it

@@ -2,16 +2,21 @@
 import sys
 import pandas as pd
 from os import path
-from requests import post
 from datetime import datetime
 
 from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtCore import QThread, Signal
-from PySide6.QtCore import Qt
 
-URL = "https://script.google.com/macros/s/AKfycbyOapKShJNq7BIJdDrvjyBaXlBAjcYsJSXGPVbliPwVf3uTG_GlHYu8HVo-wnvEFEm-Dg/exec"
-data_points_key = "p"
-parallelism_value_key = "parallelismValue"
+'''
+Qt app source code for Build Platform Measurement Jig
+Author:
+    - Gabriel Thien (Asiga 2023-2024)
+Project members:
+    - Lucasz Kaminski
+    - Ramses Gonzales
+    - Gabriel Thien
+'''
+VERSION = "1.0.0"
 
 BIAS_BACK_ROW = 0.000 # Indicators 0, 1, 2
 BIAS_MIDDLE_ROW = 0.001 # Indicators 3, 4, 5
@@ -26,6 +31,7 @@ from ui_form import Ui_MainWindow
 from ExtractData import SerialPortGetter, DataGetter
 # from ParallelismChecker import ParallelismChecker
 from qr import QRScanner
+from PostToSheet import post_to_google_sheets
 
 DATA_FILE = "data.csv"
 
@@ -207,7 +213,7 @@ class MainWindow(QMainWindow):
         self.ui.identifier_data.setText(str(qr_code_text))
         self.identifier = qr_code_text
 
-        # Save the data locally
+        # Save data
         self.save_data()
 
     def highlight_points(self, points):
@@ -333,7 +339,7 @@ class MainWindow(QMainWindow):
         if self.identifier == None:
             self.ui.identifier_data.setText("No Identifier Data")
             return
-        # self.get_qr_id.emit() # Get QR ID
+
         date = datetime.now().strftime("%H:%M - %d/%m/%Y")
         PlatformID = self.ui.identifier_data.text().strip()
         grade = self.ui.grade_data.text()
@@ -358,15 +364,15 @@ class MainWindow(QMainWindow):
                                      'PlatformID': f'{PlatformID}',
                                      'Grade': f"{grade}", 
                                      'MaxMin': f'{MaxMin}',
-                                     'P0': f'{point_data["0"]}',
-                                     'P1': f'{point_data["1"]}',
-                                     'P2': f'{point_data["2"]}',
-                                     'P3': f'{point_data["3"]}',
-                                     'P4': f'{point_data["4"]}',
-                                     'P5': f'{point_data["5"]}',
-                                     'P6': f'{point_data["6"]}',
-                                     'P7': f'{point_data["7"]}',
-                                     'P8': f'{point_data["8"]}'}])
+                                     '0': f'{point_data["0"]}',
+                                     '1': f'{point_data["1"]}',
+                                     '2': f'{point_data["2"]}',
+                                     '3': f'{point_data["3"]}',
+                                     '4': f'{point_data["4"]}',
+                                     '5': f'{point_data["5"]}',
+                                     '6': f'{point_data["6"]}',
+                                     '7': f'{point_data["7"]}',
+                                     '8': f'{point_data["8"]}'}])
             file = pd.concat([file, new_row], ignore_index=True)
             file.to_csv(DATA_FILE, index=False)
         else:
@@ -380,7 +386,11 @@ class MainWindow(QMainWindow):
             "data_points": point_data
         }
 
-        post(URL, json=post_json_data)
+        success = post_to_google_sheets(json_data=post_json_data)
+        if success:
+            print("Successfully posted to Google Sheets")
+        else:
+            print("Failed to post to Google Sheets")
         
     def terminate_threads(self):
         if self.serport_thread.isRunning():
